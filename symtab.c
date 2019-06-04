@@ -432,14 +432,22 @@ void printsymbol(SYMBOL sym)
 		ppsym(sym);
 		break;
 	case SYM_VAR:
-		if (sym->dataType->kind == SYM_BASIC)
+		if (sym->dataType == NULL)
+		{
+			printf(" %ld  %10s  VAR    %1d typ    NULL  lvl %2d  siz %5d  off %5d\n",
+				(long)sym, sym->nameString, sym->basicType, sym->nestLevel, sym->size, sym->offset);
+		}
+		else if (sym->dataType->kind == SYM_BASIC)
 			printf(" %ld  %10s  VAR    %1d typ %7s  lvl %2d  siz %5d  off %5d\n",
 			(long)sym, sym->nameString, sym->basicType, sym->dataType->nameString,
 				sym->nestLevel, sym->size, sym->offset);
-		else printf(" %ld  %10s  VAR    %1d typ %ld  lvl %2d  siz %5d  off %5d\n",
-			(long)sym, sym->nameString, sym->basicType, (long)sym->dataType,
-			sym->nestLevel, sym->size, sym->offset);
-		if (sym->dataType->kind != SYM_BASIC) ppsym(sym->dataType);
+		else
+		{
+			printf(" %ld  %10s  VAR    %1d typ %ld  lvl %2d  siz %5d  off %5d\n",
+				(long)sym, sym->nameString, sym->basicType, (long)sym->dataType,
+				sym->nestLevel, sym->size, sym->offset);
+			ppsym(sym->dataType);
+		}
 		break;
 	case SYM_TYPE:
 		printf(" %ld  %10s  TYPE   typ %ld  lvl %2d  siz %5d  off %5d\n",

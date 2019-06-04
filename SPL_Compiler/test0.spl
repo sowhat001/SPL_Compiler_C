@@ -1,0 +1,10 @@
+program test;
+var
+    x : integer;
+    y : integer;
+
+begin
+    x := 2;
+    y := x + 1;
+end
+.

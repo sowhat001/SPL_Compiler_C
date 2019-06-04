@@ -1,0 +1,53 @@
+program test;
+const
+	pi = 3.14159
+	zero = 0
+var
+	i : integer;
+	r : real;
+	b : bool;
+	c : char;
+	s : string;
+
+function go(a : integer): integer;
+var
+	b : integer;
+	c : integer;
+begin
+	b := a - 1;
+	c := a - 2;
+	if a = 1 then
+	begin
+		go := 1;
+	end
+	else
+	begin
+		if a = 2 then
+		begin
+			go := 1;
+		end
+		else
+		begin
+			go := go(b);
+			go := go(c) + go;
+		end
+		;
+	end
+	;
+end
+;
+
+begin //123456
+{123456}
+{*
+123456
+*}
+	i := 	go(10);
+	r := -1.26e10;
+	b := true;
+	c := '5';
+	s := '456123';
+	s := '489999999999999999999999';
+	writeln(i);
+end
+.

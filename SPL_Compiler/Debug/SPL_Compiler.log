@@ -1,0 +1,114 @@
+﻿  Process "parse.y" bison file
+  Process "lex.l" flex file
+  lex.flex.c
+lex.l(219): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
+lex.l(233): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
+  main.c
+d:\new\new5\pl\spl\spl_compiler\main.c(37): warning C4013: “yyparse”未定义；假设外部返回 int
+  parse.tab.c
+parse.tab.c(1583): warning C4013: “yylex”未定义；假设外部返回 int
+parse.y(39): warning C4013: “makeProgram”未定义；假设外部返回 int
+parse.y(39): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(43): warning C4013: “link”未定义；假设外部返回 int
+parse.y(43): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(45): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(47): warning C4013: “endDecl”未定义；假设外部返回 int
+parse.y(47): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(55): warning C4013: “regConst”未定义；假设外部返回 int
+parse.y(71): warning C4013: “regType”未定义；假设外部返回 int
+parse.y(77): warning C4013: “getType”未定义；假设外部返回 int
+parse.y(77): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(78): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(79): warning C4013: “makeEnum”未定义；假设外部返回 int
+parse.y(79): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(80): warning C4013: “makeSubrange”未定义；假设外部返回 int
+parse.y(80): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(81): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(84): warning C4013: “makeArray”未定义；假设外部返回 int
+parse.y(84): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(86): warning C4013: “makeRecord”未定义；假设外部返回 int
+parse.y(86): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(88): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(91): warning C4013: “makeField”未定义；假设外部返回 int
+parse.y(91): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(93): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(103): warning C4013: “regVar”未定义；假设外部返回 int
+parse.y(106): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(107): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(123): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(136): warning C4013: “makeBeginStmt”未定义；假设外部返回 int
+parse.y(136): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(138): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(141): warning C4013: “makeLabel”未定义；假设外部返回 int
+parse.y(141): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(154): warning C4013: “makeAssign”未定义；假设外部返回 int
+parse.y(154): warning C4013: “findId”未定义；假设外部返回 int
+parse.y(154): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(155): warning C4013: “arrayRef”未定义；假设外部返回 int
+parse.y(155): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(156): warning C4013: “makeRecordMember”未定义；假设外部返回 int
+parse.y(156): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(158): warning C4013: “makeFuncall”未定义；假设外部返回 int
+parse.y(158): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(159): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(161): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(162): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(164): warning C4013: “makeIf”未定义；假设外部返回 int
+parse.y(164): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(169): warning C4013: “makeRepeat”未定义；假设外部返回 int
+parse.y(169): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(171): warning C4013: “makeWhile”未定义；假设外部返回 int
+parse.y(171): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(173): warning C4013: “makeFor”未定义；假设外部返回 int
+parse.y(173): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(178): warning C4013: “makeCase”未定义；假设外部返回 int
+parse.y(178): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(180): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(183): warning C4013: “makeSignalCase”未定义；假设外部返回 int
+parse.y(183): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(184): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(186): warning C4013: “makeGoto”未定义；假设外部返回 int
+parse.y(186): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(188): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(191): warning C4013: “makeBinOp”未定义；假设外部返回 int
+parse.y(191): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(192): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(193): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(194): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(195): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(196): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(199): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(200): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(201): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(204): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(205): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(206): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(207): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(208): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(211): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(212): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(214): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(217): warning C4013: “makeUnaryOp”未定义；假设外部返回 int
+parse.y(217): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(218): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(219): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(220): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.y(222): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
+parse.tab.c(2391): warning C4013: “yyerror”未定义；假设外部返回 int
+  parsef.c
+d:\new\new5\pl\spl\spl_compiler\parsef.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\parsef.c(23): warning C4244: “函数”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(824): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(860): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(861): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(899): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(900): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(931): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(963): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+  symtab.c
+  utils.c
+  正在生成代码...
+  SPL_Compiler.vcxproj -> D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe

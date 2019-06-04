@@ -1,0 +1,4 @@
+^..\parse.y
+D:\New\New5\PL\SPL\SPL_Compiler\parse.tab.cpp
+^..\lex.l
+D:\New\New5\PL\SPL\SPL_Compiler\lex.flex.cpp

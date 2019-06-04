@@ -1,7 +1,7 @@
 program test;
 const
-	pi = 3.14159
-	zero = 0
+	pi = 3.14159;
+	zero = 0;
 var
 	i : integer;
 	r : real;

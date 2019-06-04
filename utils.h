@@ -14,7 +14,7 @@
 void printTokenDetail(TOKEN token);
 
 /* print a token only name*/
-void printTokenOnlyName(TOKEN token);
+void printTokenOnlyName(TOKEN token, int index);
 
 /* create a new empty token */
 TOKEN tokenAlloc();

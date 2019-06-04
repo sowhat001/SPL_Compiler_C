@@ -1,5 +1,9 @@
 # include "utils.h"
 
+TOKEN totalTree[10000] = { 0 };
+int parent[10000] = { 0 };
+int size = 0;
+
 void printTokenDetail(TOKEN token)
 {
 	switch (token->tokenType)
@@ -9,7 +13,7 @@ void printTokenDetail(TOKEN token)
 	case TYPE_RESERVED:
 	case TYPE_ID:
 	{
-		printf("%d   %4d   %d   %16s", token->tokenType, token->whichToken, token->dataType, token->stringVal);
+		printf("tokenType: %d   whichToken: %-4d   dataType: %d   literalValue: %-16s", token->tokenType, token->whichToken, token->dataType, token->stringVal);
 		break;
 	}
 	case TYPE_DATA:
@@ -18,22 +22,22 @@ void printTokenDetail(TOKEN token)
 		{
 		case DATA_INT:
 		{
-			printf("%d   %4d   %d   %16d", token->tokenType, token->whichToken, token->dataType, token->intVal);
+			printf("tokenType: %d   whichToken: %-4d   dataType: %d   literalValue: %-16d", token->tokenType, token->whichToken, token->dataType, token->intVal);
 			break;
 		}
 		case DATA_CHAR:
 		{
-			printf("%d   %4d   %d   %16c", token->tokenType, token->whichToken, token->dataType, token->charVal);
+			printf("tokenType: %d   whichToken: %-4d   dataType: %d   literalValue: %-16c", token->tokenType, token->whichToken, token->dataType, token->charVal);
 			break;
 		}
 		case DATA_REAL:
 		{
-			printf("%d   %4d   %d   %16lf", token->tokenType, token->whichToken, token->dataType, token->realVal);
+			printf("tokenType: %d   whichToken: %-4d   dataType: %d   literalValue: %-16lf", token->tokenType, token->whichToken, token->dataType, token->realVal);
 			break;
 		}
 		case DATA_STRING:
 		{
-			printf("%d   %4d   %d   %16s", token->tokenType, token->whichToken, token->dataType, token->stringVal);
+			printf("tokenType: %d   whichToken: %-4d   dataType: %d   literalValue: %-16s", token->tokenType, token->whichToken, token->dataType, token->stringVal);
 			break;
 		}
 		default:
@@ -45,7 +49,7 @@ void printTokenDetail(TOKEN token)
 	}
 }
 
-void printTokenOnlyName(TOKEN token)
+void printTokenOnlyName(TOKEN token, int index)
 {
 	switch (token->tokenType)
 	{
@@ -54,7 +58,7 @@ void printTokenOnlyName(TOKEN token)
 	case TYPE_RESERVED:
 	case TYPE_ID:
 	{
-		printf("%16s", token->stringVal);
+		printf("%4d: literalValue: %-16s parent: %d", index, token->stringVal, parent[index]);
 		break;
 	}
 	case TYPE_DATA:
@@ -63,22 +67,22 @@ void printTokenOnlyName(TOKEN token)
 		{
 		case DATA_INT:
 		{
-			printf("%16d", token->intVal);
+			printf("%4d: literalValue: %-16d parent: %d", index, token->intVal, parent[index]);
 			break;
 		}
 		case DATA_CHAR:
 		{
-			printf("%16c", token->charVal);
+			printf("%4d: literalValue: %-16c parent: %d", index, token->charVal, parent[index]);
 			break;
 		}
 		case DATA_REAL:
 		{
-			printf("%16lf", token->realVal);
+			printf("%4d: literalValue: %-16lf parent: %d", index, token->realVal, parent[index]);
 			break;
 		}
 		case DATA_STRING:
 		{
-			printf("%16s", token->stringVal);
+			printf("%4d: literalValue: %-16s parent: %d", index, token->stringVal, parent[index]);
 			break;
 		}
 		default:
@@ -133,42 +137,27 @@ TOKEN copyToken(TOKEN copy)
 
 void printTree(TOKEN token)
 {
-	TOKEN totalTree[10000] = {0};
-	int size = 0;
-	int endIndex = 0;
-	int beginIndex = 0;
-	int nextLevel = 0;
-	int nowLevel = 0;
 	if (token == NULL)
 	{
 		printf ("ERROR: NULL TOKEN.\n");
 	}
 	else
 	{
-		totalTree[endIndex++] = token;
-		size++;
-		nowLevel++;
-		while (size != 0)
+		totalTree[size++] = token;
+		int index = 0;
+		TOKEN now = totalTree[index];
+		while (now != NULL)
 		{
-			TOKEN temp = totalTree[beginIndex];
-			totalTree[beginIndex++] = 0;
-			size--;
-			printTokenOnlyName(temp);
-			nowLevel--;
-			if (nowLevel == 0)
+			printTokenOnlyName(now, index);
+			printf("\n");
+			TOKEN temp = now->operands;
+			while (temp != NULL)
 			{
-				printf ("\n\n");
+				totalTree[size] = temp;
+				parent[size++] = index;
+				temp = temp->next;
 			}
-			TOKEN t = temp->operands;
-			while (t != NULL)
-			{
-				totalTree[endIndex++] = t;
-				t = t->next;
-				size++;
-				nextLevel++;
-			}
-			nowLevel = nextLevel;
-			nextLevel = 0;
+			now = totalTree[++index];
 		}
 	}
 }

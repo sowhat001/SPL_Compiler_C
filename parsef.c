@@ -986,7 +986,7 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 
 TOKEN endDecl(TOKEN decl)
 {
-	blocknumber = outLevel[blocknumber];
+	curLevel=1;
 	return decl;
 }
 

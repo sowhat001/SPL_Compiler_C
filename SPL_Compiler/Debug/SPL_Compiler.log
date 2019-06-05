@@ -95,6 +95,16 @@ parse.y(219): warning C4047: “=”:“TOKEN”与“int”的间接级别不�
 parse.y(220): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(222): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.tab.c(2391): warning C4013: “yyerror”未定义；假设外部返回 int
-  utils.c
+  parsef.c
+d:\new\new5\pl\spl\spl_compiler\parsef.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\parsef.c(23): warning C4244: “函数”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(824): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(860): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(861): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(899): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(900): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(931): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(963): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
   正在生成代码...
   SPL_Compiler.vcxproj -> D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe

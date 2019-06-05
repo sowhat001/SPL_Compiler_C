@@ -2099,7 +2099,7 @@ yyreduce:
   case 87:
 /* Line 1792 of yacc.c  */
 #line 173 "parse.y"
-    { (yyval) = makeFor((yyvsp[(1) - (8)]), makeAssign((yyvsp[(3) - (8)]), (yyvsp[(2) - (8)]), (yyvsp[(4) - (8)])), (yyvsp[(5) - (8)]), (yyvsp[(6) - (8)]), (yyvsp[(7) - (8)]), (yyvsp[(8) - (8)])); }
+    { (yyval) = makeFor((yyvsp[(1) - (8)]), makeAssign((yyvsp[(3) - (8)]), findId((yyvsp[(2) - (8)])), (yyvsp[(4) - (8)])), (yyvsp[(5) - (8)]), (yyvsp[(6) - (8)]), (yyvsp[(7) - (8)]), (yyvsp[(8) - (8)])); }
     break;
 
   case 88:

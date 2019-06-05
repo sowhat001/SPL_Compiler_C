@@ -1,10 +1,12 @@
 program test;
 var
     x : integer;
-    y : integer;
+    i : integer;
+    n : integer;
 
 begin
-    x := 2;
-    y := x + 1;
+    n := 10;
+    for i := 2 to n do
+        x := x * i;
 end
 .

@@ -46,7 +46,7 @@ TOKEN createGoto(TOKEN labelToken)
 	TOKEN ret = tokenAlloc();
 	ret->tokenType = TYPE_OPERATOR;
 	ret->whichToken = OP_GOTO;
-	ret->operands = createConst(labelToken->intVal);
+	ret->operands = createConst(labelToken->operands->intVal);
 	/* ret
 
 	   constToken

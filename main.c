@@ -20,6 +20,7 @@ int yylex(void);
 int main()
 {
 	printf("BEGIN\n");
+	initPrint();
 	//int temp = 0;
 	//while (1)
 	//{
@@ -33,6 +34,7 @@ int main()
 	//	else
 	//		break;
 	//}
+
 	initsyms();
 	yyparse();
 	printst();

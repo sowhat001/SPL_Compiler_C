@@ -25,4 +25,7 @@ TOKEN copyToken(TOKEN copy);
 /* Level order print syntax tree */
 void printTree(TOKEN token);
 
+/* init Print */
+void initPrint();
+
 #endif

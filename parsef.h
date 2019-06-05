@@ -5,14 +5,6 @@
 #include "symtab.h"
 #include "utils.h"
 
-#define OP_INT_TO_REAL		1
-#define OP_REAL_TO_INT		2
-#define OP_STRING_TO_CHAR	3
-#define OP_FUNCALL			4
-#define OP_LABEL			6
-#define OP_GOTO				7
-#define OP_PROGN			8
-
 extern int yylineno;
 extern int lineCount;
 extern int curLevel;					/* current block level */

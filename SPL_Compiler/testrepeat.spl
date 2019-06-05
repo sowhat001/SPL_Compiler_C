@@ -1,0 +1,16 @@
+program test;
+var
+    a : integer;
+    b : integer;
+    r : integer;
+
+begin
+    a := 128;
+    b := 72;
+    repeat
+        r := a mod b;
+        a := b;
+        b := r;
+    until r = 0;
+end
+.

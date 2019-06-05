@@ -13,6 +13,7 @@ extern int outLevel[MAXBLOCKS];			/* out layer */
 extern int blockoffs[MAXBLOCKS];  		/* Storage offsets for each block */
 extern int basicsizes[5];			
 extern int lineCount;					/* line count */
+extern char* yytext;
 int labelNumber = 1; 					/* the label order */
 
 /* Arrayref token, like a[2], a is arrayToken, 2 is refExp */

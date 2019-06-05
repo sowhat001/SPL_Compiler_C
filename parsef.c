@@ -1108,5 +1108,6 @@ TOKEN endDecl(TOKEN decl)
 
 void yyerror(char* s)
 {
+	fprintf(stderr, "%s\n", yytext);
 	fprintf(stderr, "Parser Error at line %d: %s\n", yylineno, s);
 }

@@ -1,3 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
 #include "parsef.h"
 
 #pragma warning(disable:4996)
@@ -385,22 +388,27 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
 ???是不是还要检查一下是不是和声明的参数一样
 */
-TOKEN makeFuncall(TOKEN funcName, TOKEN lpToken, TOKEN arguments)
+TOKEN makeFuncall( TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 {
 	funcName->tokenType = TYPE_OPERATOR;
 	funcName->whichToken = OP_FUNCALL;
 	SYMBOL funSymbol = NULL;
-	funSymbol = searchst(funcName->stringVal);
+	char fname[16];
+	fname[0] = '_';
+	strcpy(fname + 1, funcName->stringVal);
+	funSymbol = searchst(fname);
 	if (!funSymbol)
 	{
 		char s[64];
-		sprintf(s, "function/procedure \"%s\" not defined", lpToken->stringVal);
+		sprintf(s, "function/procedure \"%s\" not defined", funcName->stringVal);
 		semanticError(s);
 		return NULL;
 	}
-
-	funcName->dataType = funSymbol->dataType->basicType;
-	funcName->operands = lpToken;//???有什么用
+	if (funSymbol->dataType == NULL)
+		funcName->dataType = funSymbol->basicType;
+	else
+		funcName->dataType = funSymbol->dataType->basicType;
+	funcName->operands = lpToken;				//???有什么用
 	lpToken = link(lpToken, arguments);
 
 	return funcName;

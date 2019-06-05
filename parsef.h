@@ -56,7 +56,7 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
 ???是不是还要检查一下是不是和声明的参数一样
 */
-TOKEN makeFuncall(TOKEN funcName, TOKEN lpToken, TOKEN arguments);
+TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments);
 
 /* goto Token with user's given number */
 TOKEN makeGoto(TOKEN intToken);

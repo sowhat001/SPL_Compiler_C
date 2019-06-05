@@ -5,14 +5,6 @@
 #include "symtab.h"
 #include "utils.h"
 
-#define OP_INT_TO_REAL		1
-#define OP_REAL_TO_INT		2
-#define OP_STRING_TO_CHAR	3
-#define OP_FUNCALL			4
-#define OP_LABEL			6
-#define OP_GOTO				7
-#define OP_PROGN			8
-
 extern int yylineno;
 extern int lineCount;
 extern int curLevel;					/* current block level */
@@ -64,7 +56,7 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
 ???是不是还要检查一下是不是和声明的参数一样
 */
-TOKEN makeFuncall(TOKEN funcName, TOKEN lpToken, TOKEN arguments);
+TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments);
 
 /* goto Token with user's given number */
 TOKEN makeGoto(TOKEN intToken);

@@ -431,8 +431,8 @@ void printsymbol(SYMBOL sym)
 			sym->nestLevel, sym->size, sym->offset);
 		ppsym(sym);
 		break;
-	case SYM_VAR:
 	case SYM_FIELD:
+	case SYM_VAR:
 		if (sym->dataType == NULL)
 		{
 			printf(" %ld  %10s  VAR    %1d typ    NULL  lvl %2d  siz %5d  off %5d\n",

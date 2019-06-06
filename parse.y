@@ -83,7 +83,7 @@ simple_type_decl	: SYS_TYPE 											{ $$ = getType($1); }	// integer, real ..
 
 array_type_decl		: ARRAY LB simple_type_decl RB OF type_decl			{ $$ = makeArray($3, $6); }
 					;
-record_type_decl	: RECORD field_decl_list END							{ blocknumber++; outLevel[blocknumber]=curLevel; curLevel = blocknumber; curLevel=outLevel[curLevel]; $$ = makeRecord($2); }
+record_type_decl	: RECORD field_decl_list END							{ $$ = makeRecord($2); }
 					;
 field_decl_list		: field_decl_list field_decl							{ $$ = link($1,$2); }
 					| field_decl											{ $$ = $1; }
@@ -170,7 +170,7 @@ repeat_stmt			: REPEAT stmt_list UNTIL expression					{ $$ = makeRepeat($1, $2, 
 					;
 while_stmt			: WHILE expression DO stmt							{ $$ = makeWhile($1, $2, $3, $4); }
 					;
-for_stmt			: FOR ID ASSIGN expression direction expression DO stmt	{ $$ = makeFor($1, makeAssign($3, $2, $4), $5, $6, $7, $8); }
+for_stmt			: FOR ID ASSIGN expression direction expression DO stmt	{ $$ = makeFor($1, makeAssign($3, findId($2), $4), $5, $6, $7, $8); }
 					;
 direction			: TO													{ $$ = $1; }
 					| DOWNTO												{ $$ = $1; }

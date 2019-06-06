@@ -8,7 +8,7 @@
 /* Arrayref token, like a[2], a is arrayToken, 2 is refExp */
 TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
 {
-	if (refExp->dataType != INTEGER)
+	if (refExp->dataType != DATA_INT)
 	{
 		semanticError("The index of array must be integer");
 		return NULL;
@@ -23,6 +23,7 @@ TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
 		return NULL;
 	}
 	arrRefToken->operands = arrayToken;
+	arrRefToken->dataType = arraySymbol->basicType;
 	TOKEN offsetToken = createConst((refExp->intVal - arraySymbol->dataType->lowBound) * arraySymbol->dataType->size);
 	arrayToken = link(arrayToken, offsetToken);
 	return arrRefToken;
@@ -606,7 +607,7 @@ void regVar(TOKEN varlist, TOKEN type)
 		// get the pointer of the symbol entry of the token: 
 		sym = insertsym(v->stringVal, SYM_VAR);
 		sym->basicType = typesym->basicType;
-		sym->dataType = typesym->dataType;		// here may have problems
+		sym->dataType = typesym;		// here may have problems
 		sym->size = typesym->size;
 		// offset
 		sym->offset = blockoffs[curLevel];
@@ -646,17 +647,8 @@ void regType(TOKEN alias, TOKEN type)
 {
 	SYMBOL typeSym;		// symbol table entry for the type 
 	typeSym = type->symType;
-	// if there is no name, it is a newly defined complicated type, only needs to fill in the name
-	if (strcmp(typeSym->nameString, "") == 0)
-	{
-		strcpy(typeSym->nameString, alias->stringVal);
-	}
-	// else, there is already a name, then it is a alias definition, need to create a new symbol entry 
-	else
-	{
-		SYMBOL aliasym;
-		aliasym = copyAndInsert(alias->stringVal, typeSym);
-	}
+	// treat it as an alias
+	copyAndInsert(alias->stringVal, typeSym);
 }
 
 // make a subrange type token. 
@@ -909,6 +901,7 @@ TOKEN makeRecord(TOKEN fields)
 	}
 	rectok->symEntry = recsym;
 	rectok->symType = recsym;			// token's symType pointer points to the symbol table entry
+	printf("debug: %d\n", curLevel);
 	return rectok;
 }
 
@@ -938,7 +931,6 @@ TOKEN makeField(TOKEN varlist, TOKEN type)
 		if (pre != NULL)
 			pre->members = fieldSym;			// link fields in symbol table together
 		pre = fieldSym;
-
 		v->symType = fieldSym;		// fill in the symType in token v 
 		v->symEntry = fieldSym;
 	}

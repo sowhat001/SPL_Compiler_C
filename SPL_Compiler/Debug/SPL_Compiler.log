@@ -5,8 +5,6 @@ lex.l(219): warning C4996: 'sscanf': This function or variable may be unsafe. Co
   c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
 lex.l(233): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
-  main.c
-d:\new\new5\pl\spl\spl_compiler\main.c(39): warning C4013: “yyparse”未定义；假设外部返回 int
   parse.tab.c
 parse.tab.c(1583): warning C4013: “yylex”未定义；假设外部返回 int
 parse.y(39): warning C4013: “makeProgram”未定义；假设外部返回 int
@@ -100,15 +98,14 @@ parse.tab.c(2391): warning C4013: “yyerror”未定义；假设外部返回 in
   parsef.c
 d:\new\new5\pl\spl\spl_compiler\parsef.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\new\new5\pl\spl\spl_compiler\parsef.c(26): warning C4244: “函数”: 从“double”转换到“int”，可能丢失数据
-d:\new\new5\pl\spl\spl_compiler\parsef.c(832): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(868): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\new\new5\pl\spl\spl_compiler\parsef.c(869): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\new\new5\pl\spl\spl_compiler\parsef.c(907): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(908): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(939): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(971): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
-  symtab.c
-  utils.c
+d:\new\new5\pl\spl\spl_compiler\parsef.c(29): warning C4244: “函数”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(30): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 2 拥有了类型“double”
+d:\new\new5\pl\spl\spl_compiler\parsef.c(827): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(863): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(864): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(902): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(903): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(935): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(966): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
   正在生成代码...
   SPL_Compiler.vcxproj -> D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe

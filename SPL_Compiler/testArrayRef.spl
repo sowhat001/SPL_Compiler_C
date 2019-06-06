@@ -1,0 +1,14 @@
+program test;
+type
+    arraytype = array [1..8] of integer;
+
+var 
+    x : integer;
+    y : arraytype;
+
+begin
+    x := 5;
+    writeln(x);
+    y[5] := 3;
+end
+.

@@ -1817,7 +1817,7 @@ yyreduce:
   case 31:
 /* Line 1792 of yacc.c  */
 #line 86 "parse.y"
-    { blocknumber++; outLevel[blocknumber]=curLevel; curLevel = blocknumber; curLevel=outLevel[curLevel]; (yyval) = makeRecord((yyvsp[(2) - (3)])); }
+    { (yyval) = makeRecord((yyvsp[(2) - (3)])); }
     break;
 
   case 32:

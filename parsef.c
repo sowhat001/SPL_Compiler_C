@@ -22,9 +22,12 @@ TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
 		semanticError(s);
 		return NULL;
 	}
+	arrRefToken->tokenType = TYPE_OPERATOR;
 	arrRefToken->operands = arrayToken;
+	arrRefToken->whichToken = OP_ARRAYREF;
 	arrRefToken->dataType = arraySymbol->basicType;
 	TOKEN offsetToken = createConst((refExp->intVal - arraySymbol->dataType->lowBound) * arraySymbol->dataType->size);
+	printf("from array: %d %d %d\n", refExp->intVal, arraySymbol->dataType->lowBound, arraySymbol->dataType->size);
 	arrayToken = link(arrayToken, offsetToken);
 	return arrRefToken;
 	/* arrayRef
@@ -981,6 +984,8 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 		return NULL;
 	}
 	dotToken->operands = link(recordVar, offsetToken);
+	dotToken->whichToken = OP_RECORDREF;
+	dotToken->tokenType = TYPE_OPERATOR;
 	return dotToken;
 }
 

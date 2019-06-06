@@ -14,7 +14,7 @@
 void printTokenDetail(TOKEN token);
 
 /* print a token only name*/
-void printTokenOnlyName(TOKEN token, int index);
+void printTokenOnlyName(TOKEN token);
 
 /* create a new empty token */
 TOKEN tokenAlloc();
@@ -23,7 +23,7 @@ TOKEN tokenAlloc();
 TOKEN copyToken(TOKEN copy);
 
 /* Level order print syntax tree */
-void printTree(TOKEN token);
+void printTree(TOKEN token, int level);
 
 /* init Print */
 void initPrint();

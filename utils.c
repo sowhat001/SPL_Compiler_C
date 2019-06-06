@@ -1,7 +1,6 @@
 # include "utils.h"
 
 TOKEN totalTree[10000] = { 0 };
-int parent[10000] = { 0 };
 int size = 0;
 char *NUM_TO_NAME[500] = { 0 };
 char *TYPE_NUM_TO_NAME[10] = { 0 };
@@ -52,7 +51,7 @@ void printTokenDetail(TOKEN token)
 	}
 }
 
-void printTokenOnlyName(TOKEN token, int index)
+void printTokenOnlyName(TOKEN token)
 {
 	switch (token->tokenType)
 	{
@@ -63,11 +62,11 @@ void printTokenOnlyName(TOKEN token, int index)
 	{
 		if (token->stringVal[0] == 0)
 		{
-			printf("%4d: literalValue: %-16s parent: %d", index, NUM_TO_NAME[token->whichToken], parent[index]);
+			printf("%s", NUM_TO_NAME[token->whichToken]);
 		}
 		else
 		{
-			printf("%4d: literalValue: %-16s parent: %d", index, token->stringVal, parent[index]);
+			printf("%s", token->stringVal);
 		}
 		break;
 	}
@@ -77,22 +76,22 @@ void printTokenOnlyName(TOKEN token, int index)
 		{
 		case DATA_INT:
 		{
-			printf("%4d: literalValue: %-16d parent: %d", index, token->intVal, parent[index]);
+			printf("%d", token->intVal);
 			break;
 		}
 		case DATA_CHAR:
 		{
-			printf("%4d: literalValue: %-16c parent: %d", index, token->charVal, parent[index]);
+			printf("%c", token->charVal);
 			break;
 		}
 		case DATA_REAL:
 		{
-			printf("%4d: literalValue: %-16lf parent: %d", index, token->realVal, parent[index]);
+			printf("%lf", token->realVal);
 			break;
 		}
 		case DATA_STRING:
 		{
-			printf("%4d: literalValue: %-16s parent: %d", index, token->stringVal, parent[index]);
+			printf("%s", token->stringVal);
 			break;
 		}
 		default:
@@ -109,7 +108,6 @@ TOKEN tokenAlloc()
 	TOKEN token;
 	if ((token = (TOKEN)calloc(1, sizeof(struct _token))))
 	{
-		//Initialize
 		token->tokenType = 0;
 		token->whichToken = 0;
 		token->dataType = 0;
@@ -132,10 +130,6 @@ TOKEN copyToken(TOKEN copy)
 	TOKEN empty = tokenAlloc();
 	empty->tokenType = copy->tokenType;
 	empty->dataType = copy->dataType;
-	// empty->next = copy->next;
-	// empty->symEntry = copy->symEntry;
-	// empty->symType = copy->symType;
-	// empty->operands = copy->operands;
 	empty->whichToken = copy->whichToken;
 	empty->tokenVal = copy->tokenVal;
 	empty->next = NULL;
@@ -145,7 +139,7 @@ TOKEN copyToken(TOKEN copy)
 	return empty;
 }
 
-void printTree(TOKEN token)
+void printTree(TOKEN token, int level)
 {
 	if (token == NULL)
 	{
@@ -153,21 +147,43 @@ void printTree(TOKEN token)
 	}
 	else
 	{
-		totalTree[size++] = token;
-		int index = 0;
-		TOKEN now = totalTree[index];
-		while (now != NULL)
+		if (token->operands != NULL)
 		{
-			printTokenOnlyName(now, index);
+			for (int i = 0; i < level; i++)
+			{
+				if (i == level - 1)
+				{
+					printf("©À  ");
+				}
+				else
+				{
+					printf("  ");
+				}
+			}
+			printTokenOnlyName(token);
 			printf("\n");
-			TOKEN temp = now->operands;
+			TOKEN temp = token->operands;
 			while (temp != NULL)
 			{
-				totalTree[size] = temp;
-				parent[size++] = index;
+				printTree(temp, level + 1);
 				temp = temp->next;
 			}
-			now = totalTree[++index];
+		}
+		else
+		{
+			for (int i = 0; i < level; i++)
+			{
+				if (i == level - 1)
+				{
+					printf("©À  ");
+				}
+				else
+				{
+					printf("  ");
+				}
+			}
+			printTokenOnlyName(token);
+			printf("\n");
 		}
 	}
 }

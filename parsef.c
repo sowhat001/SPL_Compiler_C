@@ -26,8 +26,7 @@ TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
 	arrRefToken->operands = arrayToken;
 	arrRefToken->whichToken = OP_ARRAYREF;
 	arrRefToken->dataType = arraySymbol->basicType;
-	TOKEN offsetToken = createConst((refExp->intVal - arraySymbol->dataType->lowBound) * arraySymbol->dataType->size);
-	printf("from array: %d %d %d\n", refExp->intVal, arraySymbol->dataType->lowBound, arraySymbol->dataType->size);
+	TOKEN offsetToken = createConst((refExp->intVal - arraySymbol->dataType->lowBound) * basicsizes[arraySymbol->basicType - 1]);
 	arrayToken = link(arrayToken, offsetToken);
 	return arrRefToken;
 	/* arrayRef
@@ -671,7 +670,7 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 	{
 		if (low->dataType == high->dataType)
 		{
-			double lowbound, highbound;
+			int lowbound, highbound;
 			rangeSym->basicType = low->dataType;	// e.g. 3..9 should be an integer between 3 and 9
 			switch (low->dataType)
 			{
@@ -682,10 +681,6 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 			case DATA_CHAR:
 				lowbound = low->charVal;
 				highbound = high->charVal;
-				break;
-			case DATA_REAL:
-				lowbound = low->realVal;
-				highbound = high->realVal;
 				break;
 			default:
 				semanticError("wrong type for subrange boundary");
@@ -750,10 +745,6 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 				case DATA_INT:
 					lowbound = lowsym->constval.intNum;
 					highbound = highsym->constval.intNum;
-					break;
-				case DATA_REAL:
-					lowbound = lowsym->constval.realNum;
-					highbound = highsym->constval.realNum;
 					break;
 				default:
 					semanticError("wrong type for subrange boundary");
@@ -899,9 +890,11 @@ TOKEN makeRecord(TOKEN fields)
 	for (f = fields; f != NULL; f = f->next)
 	{
 		fieldSym = f->symType;
+		size += fieldSym->size;
 		pre->members = fieldSym;		// link all field's symbol entries after the record's entry as members
 		pre = pre->members;
 	}
+	recsym->size = size;
 	rectok->symEntry = recsym;
 	rectok->symType = recsym;			// token's symType pointer points to the symbol table entry
 	printf("debug: %d\n", curLevel);
@@ -963,7 +956,7 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 	recordVar->symType = rectypeSym;
 	recordVar->symEntry = recvarSym;
 	SYMBOL s;
-	for (s = rectypeSym; s != NULL; s = s->members)		// fields are linked together by symbol->members
+	for (s = rectypeSym->members; s != NULL; s = s->members)		// fields are linked together by symbol->members
 	{
 		if (strcmp(field->stringVal, s->nameString) == 0)
 		{

@@ -48,8 +48,8 @@ typedef struct symtbr
 		double realNum;
 		char charConst;
 	} constval;
-	double    lowBound;			// for array 
-	double    highBound;
+	int    lowBound;			// for array 
+	int    highBound;
 	// for function: the first argument, for an argument: the next argument
 	struct symtbr *args;
 	// for enum or record, list of members

@@ -107,6 +107,8 @@ SYMBOL copyAndInsert(char name[], SYMBOL source)
 	newsym->constval = source->constval;		// can union directly assign? 
 	newsym->args = source->args;
 	newsym->members = source->members;
+	newsym->lowBound = source->lowBound;
+	newsym->highBound = source->highBound;
 	return newsym;
 }
 
@@ -373,7 +375,7 @@ void pprintsym(SYMBOL sym, int col)
 		nextcol = col + 2 + symsize[sym->kind];
 		if (sym->kind == SYM_ARRAY)
 		{
-			printf(" %3lf ..%4lf", sym->lowBound, sym->highBound);
+			printf(" %3d ..%4d", sym->lowBound, sym->highBound);
 			nextcol = nextcol + 11;
 		}
 		opnds = sym->dataType;

@@ -431,6 +431,7 @@ void printsymbol(SYMBOL sym)
 			sym->nestLevel, sym->size, sym->offset);
 		ppsym(sym);
 		break;
+	case SYM_FIELD:
 	case SYM_VAR:
 		if (sym->dataType == NULL)
 		{

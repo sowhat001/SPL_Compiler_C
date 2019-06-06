@@ -83,7 +83,7 @@ simple_type_decl	: SYS_TYPE 												{ $$ = getType($1); }	// integer, real .
 
 array_type_decl		: ARRAY LB simple_type_decl RB OF type_decl				{ $$ = makeArray($3, $6); }
 					;
-record_type_decl	: RECORD field_decl_list END							{ blocknumber++; outLevel[blocknumber]=curLevel; curLevel = blocknumber; curLevel=outLevel[curLevel]; $$ = makeRecord($2); }
+record_type_decl	: RECORD field_decl_list END							{ $$ = makeRecord($2); }
 					;
 field_decl_list		: field_decl_list field_decl							{ $$ = link($1,$2); }
 					| field_decl											{ $$ = $1; }

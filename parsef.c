@@ -27,7 +27,6 @@ TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
 	arrRefToken->whichToken = OP_ARRAYREF;
 	arrRefToken->dataType = arraySymbol->basicType;
 	TOKEN offsetToken = createConst((refExp->intVal - arraySymbol->dataType->lowBound) * basicsizes[arraySymbol->basicType - 1]);
-	printf("from array: %d %d %d\n", refExp->intVal, arraySymbol->dataType->lowBound, basicsizes[arraySymbol->basicType - 1]);
 	arrayToken = link(arrayToken, offsetToken);
 	return arrRefToken;
 	/* arrayRef

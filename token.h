@@ -49,6 +49,7 @@ typedef struct _token
 #define OP_PROGN			7
 #define OP_ARRAYREF			8
 #define OP_RECORDREF		9
+#define OP_FUN_DCL			10
 
 #define ID				258
 #define INTEGER			259

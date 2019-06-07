@@ -109,13 +109,13 @@ routine_part		: routine_part function_decl  							{ $$ = link($1, $2); }
 					| procedure_decl										{ $$ = $1; }
 					| /* empty */											{ $$ = NULL; }
 					;
-function_decl		: function_head SEMI sub_routine SEMI 	// { $$ = makeFunDcl($1, $3); }
+function_decl		: function_head SEMI sub_routine SEMI 					{ $$ = makeFunDcl($1, $3);}
 					;
-function_head		: FUNCTION ID parameters COLON simple_type_decl // { $$ = instFun(link($1, link($2, link($5, $3)))); } // FUNCTION, ID, type, para /*cons*/
+function_head		: FUNCTION { upLevel(); } ID parameters COLON simple_type_decl			{ $$ = makeFunHead($1, $3, $4, $6); } // FUNCTION, ID, para, type
 					;
-procedure_decl		: procedure_head SEMI sub_routine SEMI 	// { $$ = makeFunDcl($1, $3); }
+procedure_decl		: procedure_head SEMI sub_routine SEMI 					{ $$ = makeFunDcl($1, $4); }
 					;
-procedure_head		: PROCEDURE ID parameters 				// { $$ = instFun(link($1, link($2, $3))); }	// PROCEDURE, ID, para /*cons*/
+procedure_head		: PROCEDURE { upLevel(); } ID parameters 				{ $$ = makeFunHead($1, $2, $3, NULL);}	// PROCEDURE, ID, para 
 					;
 parameters			: LP para_decl_list RP  								{ $$ = $2; }
 					|  /*empty*/											{ $$ = NULL; }
@@ -123,14 +123,14 @@ parameters			: LP para_decl_list RP  								{ $$ = $2; }
 para_decl_list		: para_decl_list SEMI para_type_list 					{ $$ = link($1, $3); }
 					| para_type_list  										{ $$ = $1; }
 					;
-para_type_list		: var_para_list COLON simple_type_decl 	// { $$ = $1, regVars($1, $3); }
-					| val_para_list COLON simple_type_decl  	// { $$ = $1, regVars($1, $3); }
+para_type_list		: var_para_list COLON simple_type_decl 					{ $$ = $1; regVar($1, $3); }
+					| val_para_list COLON simple_type_decl  				{ $$ = $1; regVar($1, $3); }
 					;
-var_para_list		: VAR id_list
+var_para_list		: VAR id_list											{ $$ = $2; }
 					;
-val_para_list		: id_list
+val_para_list		: id_list												{ $$ = $1; }
 					;
-//(w)				
+//(w)		
 routine_body		: compound_stmt											{ $$ = $1; }
 					;
 compound_stmt		: BEGIN_ stmt_list END									{ $$ = makeBeginStmt($1, $2); }

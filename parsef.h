@@ -11,7 +11,7 @@ extern int curLevel;					/* current block level */
 extern int blocknumber;       			/* Totle number of blocks */
 extern int outLevel[MAXBLOCKS];			/* out layer */
 extern int blockoffs[MAXBLOCKS];  		/* Storage offsets for each block */
-extern int basicsizes[5];			
+extern int basicsizes[5];
 extern int lineCount;					/* line count */
 extern char* yytext;
 int labelNumber = 1; 					/* the label order */
@@ -28,9 +28,9 @@ TOKEN createGoto(TOKEN labelToken);
 /* Create a label. This function will use the system default lableNum and add itself, because it is anonymous label in loop parse, not the user's define label */
 TOKEN createLabel();
 
-/* A ID token. check this token in symbol table. 
+/* A ID token. check this token in symbol table.
 symType and symEntry are changed.
-dataType will be changed if it is a const token. */ 
+dataType will be changed if it is a const token. */
 TOKEN findId(TOKEN token);
 
 /* Link list and newItem */
@@ -53,7 +53,7 @@ TOKEN makeCase(TOKEN caseToken, TOKEN judgeExp, TOKEN choices);
 /* For loop. */
 TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssign, TOKEN beginToken, TOKEN loopStmt);
 
-/* A function call. get its arguments and check it is avaliable function name or not. 
+/* A function call. get its arguments and check it is avaliable function name or not.
 funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
 ???是不是还要检查一下是不是和声明的参数一样
 */
@@ -83,10 +83,6 @@ TOKEN makeUnaryOp(TOKEN op, TOKEN operand);
 
 /* while loop */
 TOKEN makeWhile(TOKEN whileToken, TOKEN expression, TOKEN doToken, TOKEN stmt);
-
-void semanticError(char* errorMessage);
-
-void semanticWarning(char* warningMessage);
 
 // token id's symType field is filled in with a newly created symbol table entry
 void regConst(TOKEN id, TOKEN constok);
@@ -135,4 +131,23 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field);
 
 TOKEN endDecl(TOKEN decl);
 
-void yyerror(char*);
+/* makeFunDcl: make function declaration, link the body to head*/
+TOKEN makeFunDcl(TOKEN head, TOKEN body);
+
+/* makeFunHead: make function head*/
+TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype);
+
+/* new a level, change the curLevel to the newlevel*/
+void upLevel();
+
+/* downgrade the curLevel one layer to the corresponding out level*/
+void downLevel();
+
+/* yy parse error*/
+void yyerror(char* s);
+
+/* error prompt */
+void semanticError(char* errorMessage);
+
+/* warning prompt*/
+void semanticWarning(char* warningMessage);

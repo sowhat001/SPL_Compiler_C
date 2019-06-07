@@ -30,8 +30,8 @@ TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
 	arrayToken = link(arrayToken, offsetToken);
 	return arrRefToken;
 	/* arrayRef
-	
-	   arrayToken->offset 
+
+	   arrayToken->offset
 	*/
 }
 
@@ -74,9 +74,9 @@ TOKEN createLabel()
 	return ret;
 }
 
-/* A ID token. check this token in symbol table. 
+/* A ID token. check this token in symbol table.
 symType and symEntry are changed.
-dataType will be changed if it is a const token. */ 
+dataType will be changed if it is a const token. */
 TOKEN findId(TOKEN token)
 {
 	SYMBOL idSymbol = searchst(token->stringVal);
@@ -91,9 +91,9 @@ TOKEN findId(TOKEN token)
 
 	if (idSymbol->kind == SYM_FUNCTION)
 	{
-		for (int i = MAX_STR_LENGTH; i > 0; i--) 
+		for (int i = MAX_STR_LENGTH; i > 0; i--)
 		{
-			token->stringVal[i] = token->stringVal[i-1];
+			token->stringVal[i] = token->stringVal[i - 1];
 		}
 		token->stringVal[0] = '_';
 		idSymbol = searchst(token->stringVal);
@@ -226,7 +226,7 @@ TOKEN makeAssign(TOKEN op, TOKEN leftValue, TOKEN rightValue)
 	/* op
 
 	   leftValue->rightValue
-	*/ 
+	*/
 }
 
 /* make a begin statement with BEGIN sign or other sign. beginToken's type is changed to OP_PROGN. */
@@ -279,7 +279,7 @@ TOKEN makeBinOp(TOKEN op, TOKEN leftOperand, TOKEN rightOperand)
 	}
 	return op;
 	/* op
-	   
+
 	   leftOperand->rightOperand
 	*/
 }
@@ -295,7 +295,7 @@ TOKEN makeCase(TOKEN caseToken, TOKEN judgeExp, TOKEN choices)
 
 	   judgeExp->choice->choice->choice ...
 
-	   			 stmt	 stmt	 stmt ...
+				 stmt	 stmt	 stmt ...
 	*/
 }
 
@@ -377,21 +377,21 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 
 	   initAssign(makeAssignStmt)->labelToken->ifToken
 
-	                                           comOp->beginToken(OP_PROGN)
+											   comOp->beginToken(OP_PROGN)
 
-											          loopStmt->dirAssign(makeAssignStmt)
+													  loopStmt->dirAssign(makeAssignStmt)
 
-													            assID->dirCalOp(PLUS/MINUS)
+																assID->dirCalOp(PLUS/MINUS)
 
-															           calID->constToken(1)->gotoToken
+																	   calID->constToken(1)->gotoToken
 	*/
 }
 
-/* A function call. get its arguments and check it is avaliable function name or not. 
+/* A function call. get its arguments and check it is avaliable function name or not.
 funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
 ???是不是还要检查一下是不是和声明的参数一样
 */
-TOKEN makeFuncall( TOKEN lpToken, TOKEN funcName, TOKEN arguments)
+TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 {
 	funcName->tokenType = TYPE_OPERATOR;
 	funcName->whichToken = OP_FUNCALL;
@@ -411,6 +411,25 @@ TOKEN makeFuncall( TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 		funcName->dataType = funSymbol->basicType;
 	else
 		funcName->dataType = funSymbol->dataType->basicType;
+	// check type
+	//TOKEN a;
+	//SYMBOL fatype, atype;
+	//if (funSymbol->args != NULL)
+	//{
+	//	fatype = funSymbol->args->args;			// The first args is return val
+	//}
+	//else
+	//	fatype = funSymbol->args;
+	//for (a = arguments; a != NULL; a = a->next)
+	//{
+	//	atype = a->symType;
+	//	// only check simple types
+	//	if (atype->basicType != fatype->basicType)
+	//	{
+	//		semanticError("function arguments don't match");
+	//		return NULL;
+	//	}
+	//}
 	funcName->operands = lpToken;				//???有什么用
 	lpToken = link(lpToken, arguments);
 
@@ -418,7 +437,7 @@ TOKEN makeFuncall( TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 	/* funcName
 
 	   lpToken->arguments
-	*/ 
+	*/
 }
 
 /* goto Token with user's given number */
@@ -436,7 +455,7 @@ TOKEN makeIf(TOKEN ifToken, TOKEN expression, TOKEN thenStmt, TOKEN elseStmt)
 	expression = link(expression, elseStmt);
 	return ifToken;
 	/* ifToken
-	
+
 	   expression->thenStmt->elseStmt
 	*/
 }
@@ -454,7 +473,7 @@ TOKEN makeLabel(TOKEN labelNum, TOKEN stmt)
 	   labelToken->stmt
 
 	   constToken(user's number)
-	*/ 
+	*/
 }
 
 /* program make */
@@ -484,7 +503,7 @@ TOKEN makeRepeat(TOKEN repeatToken, TOKEN stmt, TOKEN untilToken, TOKEN expressi
 
 	   labelToken->stmt->ifToken
 
-	                     expression->untilToken->gotoToken
+						 expression->untilToken->gotoToken
 	*/
 	//     repeat
 	// 　　　　r:=a mod b;
@@ -534,29 +553,18 @@ TOKEN makeWhile(TOKEN whileToken, TOKEN expression, TOKEN doToken, TOKEN stmt)
 
 	return whileToken;
 	/* whileLoken(OP_PROGN)
-	
+
 	   labelToken->ifToken
 
-	              expression->doToken(OP_PROGN)
+				  expression->doToken(OP_PROGN)
 
-				              stmt->gotoToken
+							  stmt->gotoToken
 	*/
 	//     while s<=10 do｛当s的值还未超过10时｝
 	// 　　　　begin
 	// 　　　　　n:=n+1;｛项数加1｝
 	// 　　　　　s:=s+1/n;｛将下一项值累加到s｝
 	// 　　　　end;
-}
-
-/* error and warning prompt */
-void semanticError(char* errorMessage)
-{
-	fprintf(stderr, "Error: Semantic error at line %d: %s\n", lineCount, errorMessage);
-}
-
-void semanticWarning(char* warningMessage)
-{
-	fprintf(stderr, "Warning: Semantic warning at line %d: %s\n", lineCount, warningMessage);
 }
 
 // token id's symType field is filled in with a newly created symbol table entry
@@ -984,120 +992,134 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 
 TOKEN endDecl(TOKEN decl)
 {
-	curLevel=1;
 	return decl;
 }
 
-//////////////
-// TOKEN makeFunDcl(TOKEN head, TOKEN body) {
-// 	if (DEBUG & DB_MAKEFUNDCL) {
-// 		printf("(%d) line: %d\n", debug_call_num++, lineCnt);
-// 		printf("In makeFunDcl(), from %s\n", last_method);
-// 		dbugprint2args(head, body);
-// 		last_method = "makeFunDcl()";
-// 	}
-// 	TOKEN  fundcl_tok = makeOp(OP_FUNDCL);
-// 	if (!fundcl_tok) {
-// 		printf(" Failed to alloc TOKEN(s), makeLabel().\n");
-// 		return NULL;
-// 	}
+/* makeFunDcl: make function declaration, link the body to head*/
+TOKEN makeFunDcl(TOKEN head, TOKEN body)
+{
+	TOKEN fundcl_tok = tokenAlloc();
+	fundcl_tok->tokenType = TYPE_OPERATOR;
+	fundcl_tok->whichToken = OP_FUN_DCL;
+	if (!fundcl_tok)
+	{
+		return NULL;
+	}
 
-// 	fundcl_tok->operands = head;
-// 	head->link = body;
+	fundcl_tok->operands = head;
+	if(head->operands != NULL)
+		head->operands->next = body;
+	else
+		head = link(head,body);
 
-// 	lastblock = blocknumber;	// this is the last block
-// 	blockoffs[blocknumber] = 0;
-// 	blocknumber++;				// may be another function block
-// 	contblock[blocknumber] = contblock[lastblock];
+	//curLevel = blocknumber;	// current block level, = last block
+	//blockoffs[blocknumber] = 0;
+	//blocknumber++;				// may be another function block
+	//outLevel[blocknumber] = outLevel[curLevel];
 
-// 	if (DEBUG & DB_MAKEFUNDCL) {
-// 		printf(" Finished makeFunDcl().\n");
-// 		dbugprint1tok(fundcl_tok);
-// 	}
+	return fundcl_tok;
+}
 
-// 	return fundcl_tok;
-// }
-// ////////////////w
-// TOKEN instFun(TOKEN head) {
-// 	if (DEBUG & DB_INSTFUN) {
-// 		printf("(%d) line: %d\n", debug_call_num++, lineCnt);
-// 		printf("In instFun(), from %s\n", last_method);
-// 		last_method = "instFun()";
-// 	}
+/* makeFunHead: make function head*/
+TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
+{
+	// for function
+	if (strcmp(head->stringVal, "function") == 0)
+	{
+		if (retype == NULL)
+		{
+			semanticError("sorry, the TYPE is not supported! ");
+			return NULL;
+		}
+		SYMBOL arglist;
+		SYMBOL a;
+		arglist = argtok->symEntry;
+		a = arglist;
+		while (argtok && argtok->next)
+		{
+			argtok = argtok->next;
+			if (argtok->symEntry != NULL)
+			{
+				argtok->symEntry->kind = SYM_ARGLIST;
+				a->args = argtok->symEntry;
+			}
+			else
+			{
+				semanticError("Missing argument type.");
+			}
+			a = a->args;
+		}
 
-// 	TOKEN fun_name = head->link;
+		insertfnx(name->stringVal, retype->symType, arglist);
 
-// 	// if function
-// 	if (strcmp(head->stringval, "function") == 0) {
-// 		TOKEN funtype_tok = fun_name->link;
-// 		TOKEN arg_tok = funtype_tok->link;
-// 		SYMBOL funtype_sym = searchst(funtype_tok->stringval);
-// 		if (!funtype_sym) {
-// 			semanticError("sorry we only support SYS_TYPE in functions & procedures");
-// 			return NULL;
-// 		}
+		// insert "_funname" variable  (dyx: res is inserted in isertfnx, maybe problem:
+		//TOKEN new_var = tokenAlloc();
+		//int i;
+		//new_var->stringVal[0] = '_';
+		//for (i = 1; i < 16; i++)
+		//{
+		//	new_var->stringVal[i] = fun_name->stringVal[i - 1];
+		//}
+		//new_var->tokenType = TYPE_ID; // TOKEN_ID
 
-// 		SYMBOL arglist = symalloc();
-// 		SYMBOL temp = arglist;
-// 		while (arg_tok) {
-// 			SYMBOL arg_sym = searchst(arg_tok->stringval);
-// 			SYMBOL item = symalloc();
-// 			item->kind = SYM_ARGLIST;
-// 			item->basicType = arg_sym->basicType;
+		//regVar(new_var, getType(funtype_tok));
+	}
+	// for procedure
+	else
+	{
+		SYMBOL arglist;
+		SYMBOL a;
+		arglist = argtok->symEntry;
+		a = arglist;
+		while (argtok)
+		{
+			argtok = argtok->next;
+			if (argtok->symEntry != NULL)
+			{
+				argtok->symEntry->kind = SYM_ARGLIST;
+				a->args = argtok->symEntry;
+			}
+			else
+			{
+				semanticError("Missing argument type.");
+			}
+			a = a->args;
+		}
+		insertfnx(name->stringVal, NULL, arglist);
+	}
 
-// 			temp->dataType = item;
-// 			temp = item;
-// 			arg_tok = arg_tok->link;
-// 		}
+	//TOKEN fun_block = createConst(blocknumber);
+	//head->operands = link(fun_block, name);
+	head->operands = name;
+	return head;
+}
 
-// 		insertfnx(fun_name->stringval, funtype_sym, arglist);
+void upLevel()
+{
+	blocknumber++;		// total number of blocks 
+	outLevel[blocknumber] = curLevel;		// remember the out level 
+	curLevel = blocknumber;		// up 
+}
 
-// 		// insert "_funname" variable
-// 		TOKEN new_var = talloc();
-// 		int i;
-// 		new_var->stringval[0] = '_';
-// 		for (i = 1; i < 16; i++) {
-// 			new_var->stringval[i] = fun_name->stringval[i-1];
-// 		}
-// 		new_var->tokenType = TOKEN_ID;
-		
-// 		instVars(new_var, findType(funtype_tok));
-// 	}
-// 	// if procedure
-// 	else {
-// 		TOKEN arg_tok = fun_name->link;
-
-// 		SYMBOL arglist = symalloc();
-// 		SYMBOL temp = arglist;
-// 		while (arg_tok) {
-// 			SYMBOL arg_sym = searchst(arg_tok->stringval);
-// 			SYMBOL item = symalloc();
-// 			item->kind = SYM_ARGLIST;
-// 			item->basicType = arg_sym->basicType;
-
-// 			temp->dataType = item;
-// 			temp = item;
-// 			arg_tok = arg_tok->link;
-// 		}
-
-// 		insertfnx(fun_name->stringval, NULL, arglist);
-// 	}
-
-
-// 	TOKEN fun_block = makeIntc(blocknumber);
-
-// 	head->operands = fun_block;
-// 	fun_block->link = fun_name;
-
-// 	if (DEBUG & DB_MAKEFUNDCL) {
-// 		printf(" Finished instFun() at block %d.\n", contblock[blocknumber]);
-// 	}
-
-// 	return head;
-// }
-
+void downLevel()
+{
+	curLevel = outLevel[curLevel];
+}
+/* yy parse error*/
 void yyerror(char* s)
 {
 	fprintf(stderr, "%s\n", yytext);
-	fprintf(stderr, "Parser Error at line %d: %s\n", yylineno, s);
+	fprintf(stderr, "Parser Error at line %d: %s\n", lineCount, s);
+}
+
+/* error prompt */
+void semanticError(char* errorMessage)
+{
+	fprintf(stderr, "Error: Semantic error at line %d: %s\n", lineCount, errorMessage);
+}
+
+/* warning prompt*/
+void semanticWarning(char* warningMessage)
+{
+	fprintf(stderr, "Warning: Semantic warning at line %d: %s\n", lineCount, warningMessage);
 }

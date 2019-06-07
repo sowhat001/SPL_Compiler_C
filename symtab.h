@@ -56,6 +56,8 @@ typedef struct symtbr
 	struct symbtr *members;
 	// type of array subs. can only be DATA_CHAR or DATA_INT
 	int subtype;
+	// only valied for SYM_FUNCTION symbol, remembers the level of the function's block. 
+	int flevel;
 } *SYMBOL;
 
 /* symalloc makes a new symbol table record and returns a pointer to it.

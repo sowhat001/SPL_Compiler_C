@@ -992,6 +992,7 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 
 TOKEN endDecl(TOKEN decl)
 {
+	curLevel = 1;
 	return decl;
 }
 
@@ -1063,6 +1064,35 @@ TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 		//new_var->tokenType = TYPE_ID; // TOKEN_ID
 
 		//regVar(new_var, getType(funtype_tok));
+=======
+
+		SYMBOL arglist = symalloc();
+		SYMBOL temp = arglist;
+		while (arg_tok)
+		{
+			SYMBOL arg_sym = searchst(arg_tok->stringVal);
+			SYMBOL item = symalloc();
+			item->kind = SYM_ARGLIST;
+			item->basicType = arg_sym->basicType;
+
+			temp->dataType = item;
+			temp = item;
+			arg_tok = arg_tok->next;
+		}
+
+		insertfnx(fun_name->stringVal, funtype_sym, arglist);
+
+		// insert "_funname" variable
+		TOKEN new_var = tokenAlloc();
+		int i;
+		new_var->stringVal[0] = '_';
+		for (i = 1; i < 16; i++)
+		{
+			new_var->stringVal[i] = fun_name->stringVal[i - 1];
+		}
+		new_var->tokenType = TYPE_ID; // TOKEN_ID
+
+		regVar(new_var, findType(funtype_tok));
 	}
 	// for procedure
 	else
@@ -1105,6 +1135,33 @@ void downLevel()
 {
 	curLevel = outLevel[curLevel];
 }
+		TOKEN arg_tok = fun_name->next;
+
+		SYMBOL arglist = symalloc();
+		SYMBOL temp = arglist;
+		while (arg_tok)
+		{
+			SYMBOL arg_sym = searchst(arg_tok->stringVal);
+			SYMBOL item = symalloc();
+			item->kind = SYM_ARGLIST;
+			item->basicType = arg_sym->basicType;
+
+			temp->dataType = item;
+			temp = item;
+			arg_tok = arg_tok->next;
+		}
+
+		insertfnx(fun_name->stringVal, NULL, arglist);
+	}
+
+	TOKEN fun_block = createConst(blocknumber);
+
+	head->operands = fun_block;
+	fun_block = link(fun_block, fun_name);
+
+	return head;
+}
+
 /* yy parse error*/
 void yyerror(char* s)
 {

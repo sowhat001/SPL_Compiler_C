@@ -38,7 +38,7 @@ int main()
 	initsyms();
 	yyparse();
 	printst();
-	printTree(parseResult);
+	printTree(parseResult, 0);
 	while (1);
 	return 0;
 }

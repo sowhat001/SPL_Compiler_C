@@ -1910,6 +1910,30 @@ yyreduce:
     { (yyval) = NULL; }
     break;
 
+  case 47:
+/* Line 1792 of yacc.c  */
+#line 112 "parse.y"
+    { (yyval) = makeFunDcl((yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); }
+    break;
+
+  case 48:
+/* Line 1792 of yacc.c  */
+#line 114 "parse.y"
+    { (yyval) = instFun(link((yyvsp[(1) - (5)]), link((yyvsp[(2) - (5)]), link((yyvsp[(5) - (5)]), (yyvsp[(3) - (5)]))))); }
+    break;
+
+  case 49:
+/* Line 1792 of yacc.c  */
+#line 116 "parse.y"
+    { (yyval) = makeFunDcl((yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); }
+    break;
+
+  case 50:
+/* Line 1792 of yacc.c  */
+#line 118 "parse.y"
+    { (yyval) = instFun(link((yyvsp[(1) - (3)]), link((yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])))); }
+    break;
+
   case 51:
 /* Line 1792 of yacc.c  */
 #line 120 "parse.y"
@@ -1932,6 +1956,18 @@ yyreduce:
 /* Line 1792 of yacc.c  */
 #line 124 "parse.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
+    break;
+
+  case 55:
+/* Line 1792 of yacc.c  */
+#line 126 "parse.y"
+    { (yyval) = (yyvsp[(1) - (3)]), regVar((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); }
+    break;
+
+  case 56:
+/* Line 1792 of yacc.c  */
+#line 127 "parse.y"
+    { (yyval) = (yyvsp[(1) - (3)]), regVar((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); }
     break;
 
   case 59:
@@ -2338,7 +2374,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 2342 "parse.tab.c"
+#line 2378 "parse.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

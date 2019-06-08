@@ -411,6 +411,25 @@ TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 		funcName->dataType = funSymbol->basicType;
 	else
 		funcName->dataType = funSymbol->dataType->basicType;
+	// check type
+	//TOKEN a;
+	//SYMBOL fatype, atype;
+	//if (funSymbol->args != NULL)
+	//{
+	//	fatype = funSymbol->args->args;			// The first args is return val
+	//}
+	//else
+	//	fatype = funSymbol->args;
+	//for (a = arguments; a != NULL; a = a->next)
+	//{
+	//	atype = a->symType;
+	//	// only check simple types
+	//	if (atype->basicType != fatype->basicType)
+	//	{
+	//		semanticError("function arguments don't match");
+	//		return NULL;
+	//	}
+	//}
 	funcName->operands = lpToken;				//???有什么用
 	lpToken = link(lpToken, arguments);
 
@@ -989,32 +1008,63 @@ TOKEN makeFunDcl(TOKEN head, TOKEN body)
 	}
 
 	fundcl_tok->operands = head;
-	head = link(head,body);
+	if(head->operands != NULL)
+		head->operands->next = body;
+	else
+		head = link(head,body);
 
-	curLevel = blocknumber;	// current block level, = last block
-	blockoffs[blocknumber] = 0;
-	blocknumber++;				// may be another function block
-	outLevel[blocknumber] = outLevel[curLevel];
+	//curLevel = blocknumber;	// current block level, = last block
+	//blockoffs[blocknumber] = 0;
+	//blocknumber++;				// may be another function block
+	//outLevel[blocknumber] = outLevel[curLevel];
 
 	return fundcl_tok;
 }
 
 /* makeFunHead: make function head*/
-TOKEN makeFunHead(TOKEN head)
+TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 {
-	TOKEN fun_name = head->next;
-
 	// for function
 	if (strcmp(head->stringVal, "function") == 0)
 	{
-		TOKEN funtype_tok = fun_name->next;
-		TOKEN arg_tok = funtype_tok->next;
-		SYMBOL funtype_sym = searchst(funtype_tok->stringVal);
-		if (!funtype_sym)
+		if (retype == NULL)
 		{
 			semanticError("sorry, the TYPE is not supported! ");
 			return NULL;
 		}
+		SYMBOL arglist;
+		SYMBOL a;
+		arglist = argtok->symEntry;
+		a = arglist;
+		while (argtok && argtok->next)
+		{
+			argtok = argtok->next;
+			if (argtok->symEntry != NULL)
+			{
+				argtok->symEntry->kind = SYM_ARGLIST;
+				a->args = argtok->symEntry;
+			}
+			else
+			{
+				semanticError("Missing argument type.");
+			}
+			a = a->args;
+		}
+
+		insertfnx(name->stringVal, retype->symType, arglist);
+
+		// insert "_funname" variable  (dyx: res is inserted in isertfnx, maybe problem:
+		//TOKEN new_var = tokenAlloc();
+		//int i;
+		//new_var->stringVal[0] = '_';
+		//for (i = 1; i < 16; i++)
+		//{
+		//	new_var->stringVal[i] = fun_name->stringVal[i - 1];
+		//}
+		//new_var->tokenType = TYPE_ID; // TOKEN_ID
+
+		//regVar(new_var, getType(funtype_tok));
+=======
 
 		SYMBOL arglist = symalloc();
 		SYMBOL temp = arglist;
@@ -1047,6 +1097,44 @@ TOKEN makeFunHead(TOKEN head)
 	// for procedure
 	else
 	{
+		SYMBOL arglist;
+		SYMBOL a;
+		arglist = argtok->symEntry;
+		a = arglist;
+		while (argtok)
+		{
+			argtok = argtok->next;
+			if (argtok->symEntry != NULL)
+			{
+				argtok->symEntry->kind = SYM_ARGLIST;
+				a->args = argtok->symEntry;
+			}
+			else
+			{
+				semanticError("Missing argument type.");
+			}
+			a = a->args;
+		}
+		insertfnx(name->stringVal, NULL, arglist);
+	}
+
+	//TOKEN fun_block = createConst(blocknumber);
+	//head->operands = link(fun_block, name);
+	head->operands = name;
+	return head;
+}
+
+void upLevel()
+{
+	blocknumber++;		// total number of blocks 
+	outLevel[blocknumber] = curLevel;		// remember the out level 
+	curLevel = blocknumber;		// up 
+}
+
+void downLevel()
+{
+	curLevel = outLevel[curLevel];
+}
 		TOKEN arg_tok = fun_name->next;
 
 		SYMBOL arglist = symalloc();

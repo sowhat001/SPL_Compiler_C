@@ -135,7 +135,13 @@ TOKEN endDecl(TOKEN decl);
 TOKEN makeFunDcl(TOKEN head, TOKEN body);
 
 /* makeFunHead: make function head*/
-TOKEN makeFunHead(TOKEN head);
+TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype);
+
+/* new a level, change the curLevel to the newlevel*/
+void upLevel();
+
+/* downgrade the curLevel one layer to the corresponding out level*/
+void downLevel();
 
 /* yy parse error*/
 void yyerror(char* s);

@@ -54,6 +54,7 @@ SYMBOL makesym(char name[], int kind)
 	sym->args = NULL;
 	sym->members = NULL;
 	sym->subtype = 0;
+	sym->flevel = -1;
 	return sym;
 }
 
@@ -109,6 +110,7 @@ SYMBOL copyAndInsert(char name[], SYMBOL source)
 	newsym->members = source->members;
 	newsym->lowBound = source->lowBound;
 	newsym->highBound = source->highBound;
+	newsym->flevel = newsym->flevel;
 	return newsym;
 }
 
@@ -144,7 +146,7 @@ SYMBOL searchst(char name[])
 	{
 		sym = searchlev(name, level);
 		if (level > 0)
-			level = outLevel[curLevel]; 	/* try outer level */
+			level = outLevel[level]; 	/* try outer level */
 		else level = -1;                      /* until all are tried  */
 	}
 	// printf("searchst %8s %ld at level %d\n",name, (long)sym, level);
@@ -222,25 +224,31 @@ SYMBOL insertfn(char name[], SYMBOL resulttp, SYMBOL argtp)
 SYMBOL insertfnx(char name[], SYMBOL resulttp, SYMBOL arglist)
 {
 	SYMBOL fsym, res;
+	int funcLevel;
 	char funcname[16];
 	funcname[0] = '_';		// name in the function's symbol table is '_name' to differ from the return variable
 	strcpy(funcname + 1, name);
+	funcLevel = curLevel;
+	downLevel();		// func name needs to be placed in the definition's level 
 	fsym = insertsym(funcname, SYM_FUNCTION);
-	blocknumber++;
-	outLevel[blocknumber] = curLevel;
-	curLevel = blocknumber;		// change the level 
-	res = insertsym(name, SYM_VAR);
-	if (resulttp != NULL)
+	curLevel = funcLevel;		// recover the level
+	fsym->flevel = curLevel;	// remeber the func level
+	if (resulttp != NULL)		// function
 	{
-		fsym->basicType = resulttp->basicType;
-		if (resulttp->kind == SYM_BASIC)
-			fsym->dataType = NULL;
-		else
+		res = insertsym(name, SYM_VAR);
+		if (resulttp != NULL)
+		{
+			res->basicType = resulttp->basicType;
 			fsym->dataType = resulttp;
+		}
+		// link the result and arglist to fsym->args
+		fsym->args = res;
+		res->args = arglist;
 	}
-	// link the result and arglist to fsym->args
-	fsym->args = res;
-	res->args = arglist;
+	else
+	{
+		fsym->args = arglist;
+	}
 	return fsym;
 }
 

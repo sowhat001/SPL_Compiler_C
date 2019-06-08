@@ -239,7 +239,10 @@ SYMBOL insertfnx(char name[], SYMBOL resulttp, SYMBOL arglist)
 		if (resulttp != NULL)
 		{
 			res->basicType = resulttp->basicType;
-			fsym->dataType = resulttp;
+			res->dataType = resulttp;
+			res->size = resulttp->size;
+			res->offset = blockoffs[curLevel];
+			blockoffs[curLevel] += res->size;
 		}
 		// link the result and arglist to fsym->args
 		fsym->args = res;

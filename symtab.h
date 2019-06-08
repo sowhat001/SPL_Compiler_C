@@ -11,7 +11,7 @@
 #include "token.h"
 
  /* Define kinds of symbols.  The kind field should be one of these. */
-#define SYM_ARGM		0
+#define SYM_ARGVAR		0		// 引用传递参数
 #define SYM_BASIC		1
 #define SYM_CONST		2
 #define SYM_VAR			3
@@ -21,7 +21,7 @@
 #define SYM_RECORD		7
 #define SYM_TYPE		8
 #define SYM_POINTER		9
-#define SYM_ARGLIST		10
+#define SYM_ARGLIST		10		// 值传递参数
 #define SYM_ENUM		11
 #define SYM_FIELD		12 		
 

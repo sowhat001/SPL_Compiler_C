@@ -197,7 +197,7 @@ SYMBOL insertfn(char name[], SYMBOL resulttp, SYMBOL argtp)
 	strcpy(fname + 1, name);
 	fsym = insertsym(fname, SYM_FUNCTION);
 
-	arg = insertsym(name, SYM_ARGM);	// argument 
+	arg = insertsym(name, SYM_ARGLIST);	// argument 
 	if (argtp != NULL)
 	{
 		arg->basicType = argtp->basicType;
@@ -240,6 +240,8 @@ SYMBOL insertfnx(char name[], SYMBOL resulttp, SYMBOL arglist)
 		{
 			res->basicType = resulttp->basicType;
 			res->dataType = resulttp;
+			fsym->basicType = resulttp->basicType;
+			fsym->dataType = resulttp;
 			res->size = resulttp->size;
 			res->offset = blockoffs[curLevel];
 			blockoffs[curLevel] += res->size;
@@ -444,6 +446,25 @@ void printsymbol(SYMBOL sym)
 			sym->nestLevel, sym->size, sym->offset);
 		ppsym(sym);
 		break;
+	case SYM_ARGVAR:
+		if (sym->dataType == NULL)
+		{
+			printf(" %ld  %10s  ARGVAR    %1d typ    NULL  lvl %2d  siz %5d  off %5d\n",
+				(long)sym, sym->nameString, sym->basicType, sym->nestLevel, sym->size, sym->offset);
+		}
+		else if (sym->dataType->kind == SYM_BASIC)
+			printf(" %ld  %10s  ARGVAR    %1d typ %7s  lvl %2d  siz %5d  off %5d\n",
+			(long)sym, sym->nameString, sym->basicType, sym->dataType->nameString,
+				sym->nestLevel, sym->size, sym->offset);
+		else
+		{
+			printf(" %ld  %10s  ARGVAR    %1d typ %ld  lvl %2d  siz %5d  off %5d\n",
+				(long)sym, sym->nameString, sym->basicType, (long)sym->dataType,
+				sym->nestLevel, sym->size, sym->offset);
+			ppsym(sym->dataType);
+		}
+		break;
+	case SYM_ARGLIST:
 	case SYM_FIELD:
 	case SYM_VAR:
 		if (sym->dataType == NULL)

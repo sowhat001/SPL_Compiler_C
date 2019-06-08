@@ -89,7 +89,8 @@ void regConst(TOKEN id, TOKEN constok);
 
 // put new variables into symbol table
 // e.g.: a,b,c : integer   create symbol table entry for a,b,c
-void regVar(TOKEN varlist, TOKEN type);
+// isvar=1: 引用传递  isvar=0: 值传递
+void regVar(TOKEN varlist, TOKEN type, int isvar);
 
 // get the type in symbol table by the string in a token, fill it in the symType of the token
 TOKEN getType(TOKEN typetok);

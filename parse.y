@@ -100,7 +100,7 @@ var_part			: VAR var_decl_list 									{ $$ = NULL; }
 var_decl_list		: var_decl_list var_decl 								{ $$ = NULL; }			
 					| var_decl												{ $$ = NULL; }
 					;
-var_decl			: id_list COLON type_decl SEMI							{ regVar($1, $3);	 } // register vars in $1 as $3 type
+var_decl			: id_list COLON type_decl SEMI							{ regVar($1, $3, 2);	 } // register vars in $1 as $3 type
 					;
 // routine part (w)
 routine_part		: routine_part function_decl  							{ $$ = link($1, $2); }
@@ -123,8 +123,8 @@ parameters			: LP para_decl_list RP  								{ $$ = $2; }
 para_decl_list		: para_decl_list SEMI para_type_list 					{ $$ = link($1, $3); }
 					| para_type_list  										{ $$ = $1; }
 					;
-para_type_list		: var_para_list COLON simple_type_decl 					{ $$ = $1; regVar($1, $3); }
-					| val_para_list COLON simple_type_decl  				{ $$ = $1; regVar($1, $3); }
+para_type_list		: var_para_list COLON simple_type_decl 					{ $$ = $1; regVar($1, $3, 1); }
+					| val_para_list COLON simple_type_decl  				{ $$ = $1; regVar($1, $3, 0); }
 					;
 var_para_list		: VAR id_list											{ $$ = $2; }
 					;

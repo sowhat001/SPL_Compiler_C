@@ -606,7 +606,8 @@ void regConst(TOKEN id, TOKEN constok)
 
 // put new variables into symbol table
 // e.g.: a,b,c : integer   create symbol table entry for a,b,c
-void regVar(TOKEN varlist, TOKEN type)
+// isvar=1: 参数引用传递  isvar=0: 参数值传递 isvar=2: 普通变量
+void regVar(TOKEN varlist, TOKEN type, int isvar)
 {
 	TOKEN v;
 	SYMBOL sym, typesym;
@@ -615,7 +616,13 @@ void regVar(TOKEN varlist, TOKEN type)
 	for (v = varlist; v != NULL; v = v->next)
 	{
 		// get the pointer of the symbol entry of the token: 
-		sym = insertsym(v->stringVal, SYM_VAR);
+		if (isvar == 1)
+			sym = insertsym(v->stringVal, SYM_ARGVAR);
+		else if (isvar == 0)
+			sym = insertsym(v->stringVal, SYM_ARGLIST);
+		else
+			sym = insertsym(v->stringVal, SYM_VAR);
+		
 		sym->basicType = typesym->basicType;
 		sym->dataType = typesym;		// here may have problems
 		sym->size = typesym->size;
@@ -992,7 +999,6 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 
 TOKEN endDecl(TOKEN decl)
 {
-	curLevel = 1;
 	return decl;
 }
 
@@ -1041,7 +1047,6 @@ TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 			argtok = argtok->next;
 			if (argtok->symEntry != NULL)
 			{
-				argtok->symEntry->kind = SYM_ARGLIST;
 				a->args = argtok->symEntry;
 			}
 			else
@@ -1064,35 +1069,6 @@ TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 		//new_var->tokenType = TYPE_ID; // TOKEN_ID
 
 		//regVar(new_var, getType(funtype_tok));
-=======
-
-		SYMBOL arglist = symalloc();
-		SYMBOL temp = arglist;
-		while (arg_tok)
-		{
-			SYMBOL arg_sym = searchst(arg_tok->stringVal);
-			SYMBOL item = symalloc();
-			item->kind = SYM_ARGLIST;
-			item->basicType = arg_sym->basicType;
-
-			temp->dataType = item;
-			temp = item;
-			arg_tok = arg_tok->next;
-		}
-
-		insertfnx(fun_name->stringVal, funtype_sym, arglist);
-
-		// insert "_funname" variable
-		TOKEN new_var = tokenAlloc();
-		int i;
-		new_var->stringVal[0] = '_';
-		for (i = 1; i < 16; i++)
-		{
-			new_var->stringVal[i] = fun_name->stringVal[i - 1];
-		}
-		new_var->tokenType = TYPE_ID; // TOKEN_ID
-
-		regVar(new_var, findType(funtype_tok));
 	}
 	// for procedure
 	else
@@ -1106,7 +1082,6 @@ TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 			argtok = argtok->next;
 			if (argtok->symEntry != NULL)
 			{
-				argtok->symEntry->kind = SYM_ARGLIST;
 				a->args = argtok->symEntry;
 			}
 			else
@@ -1135,33 +1110,6 @@ void downLevel()
 {
 	curLevel = outLevel[curLevel];
 }
-		TOKEN arg_tok = fun_name->next;
-
-		SYMBOL arglist = symalloc();
-		SYMBOL temp = arglist;
-		while (arg_tok)
-		{
-			SYMBOL arg_sym = searchst(arg_tok->stringVal);
-			SYMBOL item = symalloc();
-			item->kind = SYM_ARGLIST;
-			item->basicType = arg_sym->basicType;
-
-			temp->dataType = item;
-			temp = item;
-			arg_tok = arg_tok->next;
-		}
-
-		insertfnx(fun_name->stringVal, NULL, arglist);
-	}
-
-	TOKEN fun_block = createConst(blocknumber);
-
-	head->operands = fun_block;
-	fun_block = link(fun_block, fun_name);
-
-	return head;
-}
-
 /* yy parse error*/
 void yyerror(char* s)
 {

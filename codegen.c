@@ -25,7 +25,7 @@ TOKEN saved_rhs_reg = NULL;         /* in an ASSIGNOP, save the TOKEN representi
 int saved_rhs_reg_num = -1;         /* in an ASSIGNOP, save the register location of saved_rhs_reg */
 
 int nested_refs = 0;        /* used in POINTEROP in genop(). probably can be deprecated but have not checked */
-TOKEN first_op_genarith = NULL;     /* used to signal if multiple pointer dereferences are made in a single statement */
+TOKEN first_op_genExp = NULL;     /* used to signal if multiple pointer dereferences are made in a single statement */
 TOKEN nested_ref_stop_at = NULL;    /* in an AREFOP in genop(), and if multiple ptr dereferences are made in a single statement,
 									   signals the second-to-last pointer dereference */
 
@@ -84,6 +84,7 @@ void gencode(TOKEN parseResult, int varsize, int maxlabel)
 	function = parseResult->operands;
 	stkframesize = asmentry(name->stringVal, varsize);
 	asmjump(JMP, 0);	// jump to L0 (start)
+	nextlabel = maxlabel + 1;
 	while (function->whichToken == OP_FUN_DCL)
 	{
 		asmlabelstr(function->operands->operands->stringVal);
@@ -92,7 +93,6 @@ void gencode(TOKEN parseResult, int varsize, int maxlabel)
 	}
 
 	main = function;
-	nextlabel = maxlabel + 1;
 	asmlabel(0);		// label L0 (start)
 	blocknumber = 1;
 	genc(main);
@@ -132,7 +132,7 @@ int getreg(int kind)
 
 /* Trivial version */
 /* Generate code for arithmetic expression, return a register number */
-int genarith(TOKEN code)
+int genExp(TOKEN code)
 {
 
 	int num, reg_num, lhs_reg, rhs_reg;
@@ -141,34 +141,26 @@ int genarith(TOKEN code)
 	switch (code->tokenType)
 	{
 	case TYPE_DATA:
-		switch (code->dataType)
-		{
-		case DATA_INT:
+	{
+		if (code->dataType == DATA_INT)
 		{
 			num = code->intVal;
 			reg_num = getreg(DATA_INT);
-			if (num >= MINIMMEDIATE && num <= MAXIMMEDIATE)
+			if (last_ptr && last_ptr_reg_num > -1)
 			{
-				if (last_ptr && last_ptr_reg_num > -1)
-				{
-
-					// asmimmed(MOVQ, num, last_ptr_reg_num);
-					asmimmed(MOVQ, num, reg_num);
-					last_ptr_reg_num = -1;
-				}
-				else if (!nil_flag)
-				{
-					asmimmed(MOVL, num, reg_num);
-				}
-				else
-				{
-					asmimmed(MOVQ, num, reg_num);
-				}
-
+				asmimmed(MOVQ, num, reg_num);
+				last_ptr_reg_num = -1;
+			}
+			else if (!nil_flag)
+			{
+				asmimmed(MOVL, num, reg_num);
+			}
+			else
+			{
+				asmimmed(MOVQ, num, reg_num);
 			}
 		}
-		break;
-		case DATA_REAL:
+		else if (code->dataType == DATA_REAL)
 		{
 			/* Generate literal for the value of the constant, then
 			load the literal into a register. */
@@ -181,8 +173,8 @@ int genarith(TOKEN code)
 			asmldflit(MOVSD, nextlabel++, reg_num);
 		}
 		break;
-		}
-		break;
+	}
+
 	case TYPE_ID:
 	{
 		sym = searchst(code->stringVal);
@@ -251,8 +243,8 @@ int genarith(TOKEN code)
 	{
 		if (code->whichToken == MOD)
 		{
-			lhs_reg = genarith(code->operands);
-			rhs_reg = genarith(code->operands->next);
+			lhs_reg = genExp(code->operands);
+			rhs_reg = genExp(code->operands->next);
 			asmrr(MOVL, lhs_reg, EAX);
 			asmrr(MOVL, lhs_reg, EDX);
 			asmcall("mod");
@@ -261,8 +253,8 @@ int genarith(TOKEN code)
 		}
 		if (code->whichToken == MUL)
 		{
-			lhs_reg = genarith(code->operands);
-			rhs_reg = genarith(code->operands->next);
+			lhs_reg = genExp(code->operands);
+			rhs_reg = genExp(code->operands->next);
 			if (lhs_reg != EAX)
 			{
 				asmrr(MOVL, lhs_reg, EAX);
@@ -272,9 +264,9 @@ int genarith(TOKEN code)
 			break;
 		}
 
-		if (first_op_genarith == NULL)
+		if (first_op_genExp == NULL)
 		{
-			first_op_genarith = code;
+			first_op_genExp = code;
 		}
 		else
 		{
@@ -283,11 +275,11 @@ int genarith(TOKEN code)
 
 		if (code->whichToken == MINUS)
 		{
-			lhs_reg = genarith(code->operands->next);
+			lhs_reg = genExp(code->operands->next);
 		}
 		else
 		{
-			lhs_reg = genarith(code->operands);
+			lhs_reg = genExp(code->operands);
 		}
 
 		int count = 0;
@@ -295,7 +287,7 @@ int genarith(TOKEN code)
 		{
 			if (code->whichToken == MINUS)
 			{
-				rhs_reg = genarith(code->operands);
+				rhs_reg = genExp(code->operands);
 			}
 			else if (code->whichToken == OP_FUNCALL)
 			{
@@ -303,7 +295,7 @@ int genarith(TOKEN code)
 				int temp_reg;
 				while (arglist)
 				{
-					temp_reg = genarith(arglist);
+					temp_reg = genExp(arglist);
 					if (temp_reg != arg_reg[count])
 					{
 						asmrr(MOVL, temp_reg, arg_reg[count]); // score values into arg reg
@@ -313,7 +305,7 @@ int genarith(TOKEN code)
 					arglist = arglist->next;
 				}
 			}
-			else rhs_reg = genarith(code->operands->next);
+			else rhs_reg = genExp(code->operands->next);
 		}
 		else
 		{
@@ -348,7 +340,7 @@ int genarith(TOKEN code)
 		break;
 	}
 
-	first_op_genarith = NULL;
+	first_op_genExp = NULL;
 
 	return reg_num;
 }
@@ -467,134 +459,131 @@ int genop(TOKEN code, int rhs_reg, int lhs_reg)
 			temp_reg = getreg(DATA_INT);
 			if (temp_reg != EAX) asmrr(MOVL, EAX, temp_reg);
 		}
-		else
-		{
-		}
 
 		out = temp_reg;
 	}
-	else if (which_val == OP_ARRAYREF)
-	{
+	//else if (which_val == OP_ARRAYREF)
+	//{
 
-		if (saved_float_reg != -DOUBLE_MAX)
-		{
-			asmldr(MOVQ, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-		}
-		else
-		{
-			if (last_id_reg_num > -1)
-			{
-				int temp = rhs_reg;
-				if (last_id_reg_num > -1 && last_id_reg_num < 16)
-				{
-					if (last_id_reg_num == rhs_reg)
-					{
-						rhs_reg = getreg(DATA_INT);
-						free_reg(temp);
-					}
+	//	if (saved_float_reg != -DOUBLE_MAX)
+	//	{
+	//		asmldr(MOVQ, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//	}
+	//	else
+	//	{
+	//		if (last_id_reg_num > -1)
+	//		{
+	//			int temp = rhs_reg;
+	//			if (last_id_reg_num > -1 && last_id_reg_num < 16)
+	//			{
+	//				if (last_id_reg_num == rhs_reg)
+	//				{
+	//					rhs_reg = getreg(DATA_INT);
+	//					free_reg(temp);
+	//				}
 
-					if (last_ptr && last_ptr_reg_num > -1)
-					{
+	//				if (last_ptr && last_ptr_reg_num > -1)
+	//				{
 
-						int found = 0;
-						SYMBOL temp0, temp1, temp2, temp3, temp4, temp5, typsym;
-						temp0 = searchst(last_ptr->stringVal);
-						typsym = NULL;
+	//					int found = 0;
+	//					SYMBOL temp0, temp1, temp2, temp3, temp4, temp5, typsym;
+	//					temp0 = searchst(last_ptr->stringVal);
+	//					typsym = NULL;
 
-						if (!temp0)
-						{
-							return symbol_is_null_int(code->stringVal);
-						}
+	//					if (!temp0)
+	//					{
+	//						return symbol_is_null_int(code->stringVal);
+	//					}
 
-						temp1 = searchst(temp0->next->nameString);
+	//					temp1 = searchst(temp0->next->nameString);
 
-						if (!temp1)
-						{
-							return symbol_is_null_int(code->stringVal);
-						}
+	//					if (!temp1)
+	//					{
+	//						return symbol_is_null_int(code->stringVal);
+	//					}
 
-						if (temp1->dataType->kind == SYM_ARRAY)
-						{
-							typsym = temp1->dataType;
-							while (typsym && typsym->kind == SYM_ARRAY)
-							{
-								typsym = typsym->dataType;
-							}
+	//					if (temp1->dataType->kind == SYM_ARRAY)
+	//					{
+	//						typsym = temp1->dataType;
+	//						while (typsym && typsym->kind == SYM_ARRAY)
+	//						{
+	//							typsym = typsym->dataType;
+	//						}
 
-							if (!typsym)
-							{
-								return symbol_is_null_int(code->stringVal);
-							}
+	//						if (!typsym)
+	//						{
+	//							return symbol_is_null_int(code->stringVal);
+	//						}
 
-							temp2 = typsym->dataType;
-							if (temp2 && temp2->kind == SYM_RECORD)
-							{
-								temp3 = temp2->dataType;
+	//						temp2 = typsym->dataType;
+	//						if (temp2 && temp2->kind == SYM_RECORD)
+	//						{
+	//							temp3 = temp2->dataType;
 
-								while (temp3 && !found)
-								{
-									if (temp3->offset == last_ptr_deref_offs)
-									{
-										found = 1;
+	//							while (temp3 && !found)
+	//							{
+	//								if (temp3->offset == last_ptr_deref_offs)
+	//								{
+	//									found = 1;
 
-										if (temp3->size > basicsizes[DATA_INT])
-										{
-											asmldr(MOVQ, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-										}
-										else
-										{
-											asmldr(MOVL, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-										}
-									}
-									temp3 = temp3->next;
-								}
-							}
+	//									if (temp3->size > basicsizes[DATA_INT])
+	//									{
+	//										asmldr(MOVQ, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//									}
+	//									else
+	//									{
+	//										asmldr(MOVL, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//									}
+	//								}
+	//								temp3 = temp3->next;
+	//							}
+	//						}
 
-						}
-						else
-						{
+	//					}
+	//					else
+	//					{
 
-						}
+	//					}
 
-						// probably broken
-						if (!found)
-						{
-							asmldr(MOVL, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-						}
+	//					// probably broken
+	//					if (!found)
+	//					{
+	//						asmldr(MOVL, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//					}
 
-						last_ptr_reg_num = -1;
-					}
-					else
-					{
-						asmldr(MOVL, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-					}
+	//					last_ptr_reg_num = -1;
+	//				}
+	//				else
+	//				{
+	//					asmldr(MOVL, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//				}
 
-				}
-				else
-				{
-					if (last_id_reg_num == rhs_reg)
-					{
-						rhs_reg = getreg(DATA_REAL);
-						free_reg(temp);
-					}
-					asmldr(MOVSD, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-				}
-				// else // WHAT ABOUT IF LHS IS > 15 ???????????????????????????????????????????????????
-			}
-			else
-			{
-				free_reg(rhs_reg);
-				rhs_reg = getreg(DATA_REAL);
-				asmldr(MOVSD, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
-			}
+	//			}
+	//			else
+	//			{
+	//				if (last_id_reg_num == rhs_reg)
+	//				{
+	//					rhs_reg = getreg(DATA_REAL);
+	//					free_reg(temp);
+	//				}
+	//				asmldr(MOVSD, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//			}
+	//			// else // WHAT ABOUT IF LHS IS > 15 ???????????????????????????????????????????????????
+	//		}
+	//		else
+	//		{
+	//			free_reg(rhs_reg);
+	//			rhs_reg = getreg(DATA_REAL);
+	//			asmldr(MOVSD, code->operands->next->intVal, lhs_reg, rhs_reg, "^.");
+	//		}
 
-		}
+	//	}
 
-		last_ptr_reg_num = rhs_reg;
+	//	last_ptr_reg_num = rhs_reg;
 
-		out = rhs_reg;
+	//	out = rhs_reg;
 
-	}
+	//}
 	else if (which_val == FLOAT)
 	{
 		int freg = getreg(DATA_REAL);
@@ -676,7 +665,7 @@ void genc(TOKEN code)
 		//{
 		//	nested_ref_stop_at = code->operands->operands;
 		//}
-		reg_num = genarith(rightValue);                        /* generate rhs into a register */
+		reg_num = genExp(rightValue);                        /* generate rhs into a register */
 		saved_rhs_reg = rightValue;
 		saved_rhs_reg_num = reg_num;
 
@@ -698,7 +687,7 @@ void genc(TOKEN code)
 		}
 		//if (leftValue->operands)
 		//{
-		//	reg_num = genarith(leftValue->operands);
+		//	reg_num = genExp(leftValue->operands);
 		//}
 		nil_flag = 0;
 		saved_float_reg = -DOUBLE_MAX;
@@ -715,43 +704,40 @@ void genc(TOKEN code)
 		TOKEN exp = code->operands;
 		TOKEN ifStmt = code->operands->next;
 		TOKEN elseStmt = code->operands->next->next;
-		int if_label_num = genarith(exp);
-		int else_label_num;
-		int endif_label_num;
+		int ifLabel = genExp(exp);
+		int elseLabel;
+		int endIfLabel;
 		if (elseStmt)
 		{
-			else_label_num = nextlabel++;
+			elseLabel = nextlabel++;
 		}
-		endif_label_num = nextlabel++;
+		endIfLabel = nextlabel++;
 
 		// have else
 		if (elseStmt)
 		{
-			asmjump(JMP, else_label_num);	// 0 -> else_label
+			asmjump(JMP, elseLabel);	// 0 -> else_label
 
-			asmlabel(if_label_num);			// if_label
+			asmlabel(ifLabel);			// if_label
+			genc(ifStmt);
+			asmjump(JMP, endIfLabel);	// jump -> endif
+
+			asmlabel(elseLabel);		// else_label
 			genc(elseStmt);
-			asmjump(JMP, endif_label_num);	// jump -> endif
-
-			asmlabel(else_label_num);		// else_label
-			genc(elseStmt->next);
-			asmlabel(endif_label_num);		// endif_label
+			asmlabel(endIfLabel);		// endif_label
 		}
 		// no else
 		else
 		{
-			asmjump(JMP, endif_label_num);	// 0 -> endif_label
-
-			asmlabel(if_label_num);			// if_label
-			genc(elseStmt);
-			//asmjump(JMP, endif_label_num);	// jump -> endif, not necessary
-
-			asmlabel(endif_label_num);		// endif_label
+			asmjump(JMP, endIfLabel);	// 0 -> endif_label
+			asmlabel(ifLabel);			// if_label
+			genc(ifStmt);
+			asmlabel(endIfLabel);		// endif_label
 		}
 
 	}
 	break;
-	// procedures. functions will be generate by OP_ASSIGN / genarith
+	// procedures. functions will be generate by OP_ASSIGN / genExp
 	case OP_FUNCALL:
 	{
 		TOKEN lhs, rhs;
@@ -853,7 +839,7 @@ void genc(TOKEN code)
 			int temp_reg, index = 0;
 			while (arglist)
 			{
-				temp_reg = genarith(arglist);
+				temp_reg = genExp(arglist);
 				asmrr(MOVL, temp_reg, arg_reg[index]); // score values into arg reg
 				mark_reg_used(arg_reg[index++]);
 				free_reg(temp_reg);

@@ -1,0 +1,176 @@
+BEGIN
+Symbol table level 0
+ 0:  16303024        sqrt  VAR    2 typ    NULL  lvl  0  siz -842150451  off -842150451
+ 1:  16303160        _ord  knd 5 1  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+ 2:  16302888       _sqrt  knd 5 2  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+ 3:  16324848      readln  VAR    -1 typ    NULL  lvl  0  siz -842150451  off -842150451
+ 4:  16303432        _chr  knd 5 4  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+ 5:  16325256       write  VAR    4 typ    NULL  lvl  0  siz -842150451  off -842150451
+ 6:  16278344     integer  BASIC  basicType   1          siz     4
+ 7:  16324712     _readln  knd 5 -1  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+ 8: NULL
+ 9: NULL
+10: NULL
+11: NULL
+12: NULL
+13:  16324032        _odd  knd 5 1  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+14: NULL
+15:  16322224        _sqr  knd 5 2  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+16: NULL
+17: NULL
+18: NULL
+19: NULL
+20:  16325664        pred  VAR    4 typ    NULL  lvl  0  siz -842150451  off -842150451
+21:  16323488      _write  knd 5 -1  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+22:  16303704       _pred  knd 5 4  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+23: NULL
+24:  16303296         ord  VAR    1 typ    NULL  lvl  0  siz -842150451  off -842150451
+25:  16324168        read  VAR    -1 typ    NULL  lvl  0  siz -842150451  off -842150451
+26:  16323624    _writeln  knd 5 -1  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+27:  16325392       _read  knd 5 -1  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+28:  16323080       _succ  knd 5 4  typ 0  lvl  0  siz -842150451  off -842150451
+(FUNCTION)
+29: NULL
+30: NULL
+Symbol table level 1
+ 0: NULL
+ 1: NULL
+ 2: NULL
+ 3: NULL
+ 4: NULL
+ 5: NULL
+ 6: NULL
+ 7: NULL
+ 8:  16324576         _go  knd 5 1  typ 16278344  lvl  1  siz -842150451  off -842150451
+(FUNCTION integer)
+ 9: NULL
+10: NULL
+11: NULL
+12: NULL
+13: NULL
+14: NULL
+15: NULL
+16: NULL
+17: NULL
+18: NULL
+19: NULL
+20: NULL
+21: NULL
+22: NULL
+23: NULL
+24: NULL
+25: NULL
+26:  16323896           i  VAR    1 typ integer  lvl  1  siz     4  off     0
+27: NULL
+28: NULL
+29: NULL
+30: NULL
+Symbol table level 2
+ 0: NULL
+ 1: NULL
+ 2: NULL
+ 3: NULL
+ 4: NULL
+ 5: NULL
+ 6: NULL
+ 7:  16324440          go  VAR    1 typ integer  lvl  2  siz     4  off     4
+ 8: NULL
+ 9: NULL
+10: NULL
+11: NULL
+12: NULL
+13: NULL
+14: NULL
+15: NULL
+16: NULL
+17: NULL
+18:  16324304           a  VAR    1 typ integer  lvl  2  siz     4  off     0
+19:  16325800           b  VAR    1 typ integer  lvl  2  siz     4  off     8
+20:  16324984           c  VAR    1 typ integer  lvl  2  siz     4  off    12
+21: NULL
+22: NULL
+23: NULL
+24: NULL
+25: NULL
+26: NULL
+27: NULL
+28: NULL
+29: NULL
+30: NULL
+test
+©À  OP_FUN_DCL
+  ©À  function
+    ©À  go
+    ©À  begin
+      ©À  :=
+        ©À  b
+        ©À  -
+          ©À  a
+          ©À  1
+      ©À  :=
+        ©À  c
+        ©À  -
+          ©À  a
+          ©À  2
+      ©À  if
+        ©À  =
+          ©À  a
+          ©À  1
+        ©À  begin
+          ©À  :=
+            ©À  go
+            ©À  1
+        ©À  begin
+          ©À  if
+            ©À  =
+              ©À  a
+              ©À  2
+            ©À  begin
+              ©À  :=
+                ©À  go
+                ©À  1
+            ©À  begin
+              ©À  :=
+                ©À  go
+                ©À  go
+                  ©À  (
+                  ©À  b
+              ©À  :=
+                ©À  go
+                ©À  +
+                  ©À  go
+                    ©À  (
+                    ©À  c
+                  ©À  go
+©À  begin
+  ©À  :=
+    ©À  i
+    ©À  go
+      ©À  (
+      ©À  10
+  ©À  writeln
+    ©À  (
+    ©À  i
+# ---------------------- Beginning of Generated Code --------------------
+        .file   "foo"
+        .text
+.globl test
+        .type   test, @function
+test:
+.LFB0:
+	.cfi_startproc
+	pushq	%rbp              # save base pointer on stack
+	.cfi_def_cfa_offset 16
+	movq	%rsp, %rbp        # move stack pointer to base pointer
+	.cfi_offset 6, -16
+	.cfi_def_cfa_regist

@@ -10,14 +10,11 @@ int nextlabel;    /* Next available label number */
 int stkframesize;   /* total stack frame size */
 
 TOKEN inline_funcall = NULL;        /* to handle function calls in the RHS of an ASSIGNOP statement */
-int num_funcalls_in_curr_tree;
 int num_inlines_processed;
 int saved_inline_reg;
 int saved_inline_regs[10];
 
 int saved_label_num = -1;           /* saves the label number of the top-level label; used to handle repeat statements */
-
-int new_funcall_flag = 0;   /* if a FUNCALLOP is for new(), set to 1 */
 
 double saved_float_reg = -DOUBLE_MAX;  /* in an ASSIGNOP, holds the value of the float being assigned */
 int saved_float_reg_num = -1;       /* the register where the float in saved_float_reg is stored */
@@ -47,13 +44,15 @@ int used_regs[32] = { 0, 0, 0, 0, 0, 0, 0, 0,
 };
 int arg_reg[4] = { EDI, ESI, EDX, ECX };
 
-char* funtoparseResult[] = {
+char* funcTopCode[] = 
+{
   "	pushq	%rbp			# save base pointer on stack",
   "	movq	%rsp, %rbp		# move stack pointer to base pointer",
   "	subq	$32, %rsp		# make space for this stack frame",
   "",
 };
-char* funbotcode[] = {
+char* funBotCode[] = 
+{
 	"	movq    %rbp, %rsp",
 	"	popq    %rbp",
 	"	ret",
@@ -329,36 +328,6 @@ int genarith(TOKEN code)
 			lhs_reg = genop(code, lhs_reg, rhs_reg);
 		else
 			lhs_reg = genop(code, rhs_reg, lhs_reg);
-		/*
-		if (code->operands->whichToken == OP_FUNCALL) {
-
-			free_reg(lhs_reg);
-			lhs_reg = saved_inline_regs[num_inlines_processed - 1];
-			mark_reg_used(lhs_reg);
-		}
-		if (code->operands->next) {
-
-			if (code->operands->next->whichToken == OP_FUNCALL) {
-
-				free_reg(rhs_reg);
-				//rhs_reg = saved_inline_regs[num_inlines_processed - 2];
-				//mark_reg_used(rhs_reg);
-			}
-		}
-		*/
-
-		/*
-		int same_reg_assn = 0;
-		if (lhs_reg == rhs_reg) {
-			same_reg_assn = 1;
-			if (rhs_reg > 15) {
-				lhs_reg = getreg(DATA_REAL);
-			}
-			else {
-				lhs_reg = getreg(DATA_INT);
-			}
-		}
-		*/
 
 		if (code->whichToken == OP_FUNCALL)
 		{
@@ -369,21 +338,6 @@ int genarith(TOKEN code)
 			}
 		}
 		else free_reg(rhs_reg);
-
-		/*
-		if (same_reg_assn) {
-			int temp;
-			if (lhs_reg > 15) {
-				free_reg(lhs_reg);
-				temp = getreg(DATA_REAL);
-			}
-			else {
-				free_reg(lhs_reg);
-				temp = getreg(DATA_INT);
-			}
-			lhs_reg = temp;
-		}
-		*/
 
 		reg_num = lhs_reg;
 
@@ -512,36 +466,9 @@ int genop(TOKEN code, int rhs_reg, int lhs_reg)
 			asmcall(inline_funcall->stringVal);
 			temp_reg = getreg(DATA_INT);
 			if (temp_reg != EAX) asmrr(MOVL, EAX, temp_reg);
-
-			//saved_inline_regs[num_inlines_processed++] = temp_reg;
-			/*
-			if (num_funcalls_in_curr_tree > 1) {
-				saved_inline_regs[num_inlines_processed] = saved_inline_reg;
-				num_inlines_processed++;
-				if (num_inlines_processed == 1) {
-					asmcall(inline_funcall->stringVal);
-					//asmsttemp(saved_inline_reg);
-					temp_reg = getreg(DATA_INT);
-					asmrr(MOVL, EAX, temp_reg);
-
-				}
-				else if (num_inlines_processed > 0 && num_inlines_processed < num_funcalls_in_curr_tree) {
-					// load and then store?
-				}
-				else {
-					asmcall(inline_funcall->stringVal);
-					//asmldtemp(saved_inline_reg);
-				}
-			}
-			else {
-				asmcall(inline_funcall->stringVal);
-			}
-
-			inline_funcall = NULL;*/
 		}
 		else
 		{
-			// ?????????????????????????????
 		}
 
 		out = temp_reg;
@@ -693,287 +620,121 @@ int genop(TOKEN code, int rhs_reg, int lhs_reg)
 	return out;
 }
 
-
 /* Generate code for a Statement from an intermediate-code form */
 void genc(TOKEN code)
 {
-	TOKEN tok, lhs, rhs;
 	int reg_num, offs;
-	SYMBOL sym;
-
+	reset_regs();
 	if (code->tokenType != TYPE_OPERATOR)
 	{
-		if (code->tokenType == TYPE_DATA && code->dataType == DATA_INT && new_funcall_flag)
+		if (code->tokenType == TYPE_DATA)
 		{
-			reset_regs();
-			new_funcall_flag = 0;
 			return;
 		}
-
 		printf("Bad code token");
 	}
-
-	reset_regs();
 
 	switch (code->whichToken)
 	{
 	case OP_PROGN:
 	{
+		TOKEN token = code->operands;
 		last_ptr = NULL;
 		last_ptr_reg_num = -1;
 		last_ptr_deref_offs = -1;
 		nested_ref_stop_at = NULL;
-
-		int i;
-		for (i = 0; i < 10; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			saved_inline_regs[i] = -1;
 		}
 		num_inlines_processed = 0;
 		last_id_reg_num = -1;
-
-		tok = code->operands;
-		while (tok)
+		while (token)
 		{
-
-			num_funcalls_in_curr_tree = num_funcalls_in_tree(tok->operands, 0);
 			saved_inline_reg = 0;       // may need to set to -1 as sentinel value
-
-			if (tok->whichToken == OP_LABEL)
-			{
-				saved_label_num = tok->operands->intVal;
-			}
-			if (search_tree_str(tok, "new"))
-			{
-				new_funcall_flag = 1;
-			}
-
-			genc(tok);
-			tok = tok->next;
+			genc(token);
+			token = token->next;
 		}
 	}
 	break;
-
 	case ASSIGN:
 	{
-		TOKEN last_operand = code;
-		while (last_operand->operands != NULL)
-		{
-			last_operand = last_operand->operands;
-		}
-		TOKEN outer_link = code->operands->next;
+		//TOKEN lastOperand = code;
+ 		//	while (lastOperand->operands != NULL)
+		//{
+		//	lastOperand = lastOperand->operands;
+		//}
+		//TOKEN outer_link = code->operands->next;
 
-		lhs = code->operands;
-		rhs = lhs->next;
+		//lhs = code->operands;
+		//rhs = lhs->next;
+		TOKEN leftValue = code->operands;
+		TOKEN rightValue = code->operands->next;
+		SYMBOL leftSymbol = searchst(leftValue->stringVal);
 
-		if (code->operands->operands != NULL)
-		{
-			nested_ref_stop_at = code->operands->operands;
-		}
-
-		reg_num = genarith(rhs);                        /* generate rhs into a register */
-		saved_rhs_reg = rhs;
+		//if (code->operands->operands != NULL)
+		//{
+		//	nested_ref_stop_at = code->operands->operands;
+		//}
+		reg_num = genarith(rightValue);                        /* generate rhs into a register */
+		saved_rhs_reg = rightValue;
 		saved_rhs_reg_num = reg_num;
 
-		sym = searchst(lhs->stringVal);
-
-		int datatype = code->dataType;                  /* store value into lhs  */
-
 		// simple var
-		if (sym)
+		if (leftSymbol)
 		{
-			offs = sym->offset - stkframesize;          /* net offset of the var   */
-
+			offs = leftSymbol->offset - stkframesize;          /* net offset of the var   */
 			switch (code->dataType)
 			{
 			case DATA_INT:
-				asmst(MOVL, reg_num, offs, lhs->stringVal);
+				asmst(MOVL, reg_num, offs, leftValue->stringVal);
 				break;
-
 			case DATA_REAL:
-				asmst(MOVSD, reg_num, offs, lhs->stringVal);
+				asmst(MOVSD, reg_num, offs, leftValue->stringVal);
 				break;
-
 			default:
-
 				break;
 			}
 		}
-		// array or record
-		else
-		{
-			sym = searchst(lhs->operands->stringVal);
-
-			// array or record
-			if (sym)
-			{
-				offs = sym->offset - stkframesize;
-
-				TOKEN last_link = lhs->operands;
-				while (last_link->next != NULL)
-				{
-					last_link = last_link->next;
-				}
-
-				if (last_link)
-				{
-					if (last_link->tokenType == TYPE_DATA && last_link->dataType == DATA_INT)
-					{
-
-						asmimmed(MOVL, last_link->intVal, EAX);
-						asmop(CLTQ);
-
-						if (reg_num >= 0 && reg_num < 16)
-						{
-							asmstrr(MOVL, reg_num, offs, EAX, sym->nameString);
-						}
-						else
-						{
-							asmstrr(MOVSD, reg_num, offs, EAX, sym->nameString);
-						}
-
-					}
-					else if (last_link->tokenType == TYPE_OPERATOR && last_link->whichToken == PLUS)
-					{
-						TOKEN plus_operand = last_link->operands;
-						TOKEN mul_operand = plus_operand->next->operands;
-						TOKEN last_operand = mul_operand->next;
-
-						mark_reg_unused(EAX);
-						mark_reg_used(last_ptr_reg_num);
-
-						int move_plus_to = getreg(DATA_INT);
-						int move_mul_to = getreg(DATA_INT);
-						int move_last_to;
-
-						asmimmed(MOVL, plus_operand->intVal, move_plus_to);
-						asmimmed(MOVL, mul_operand->intVal, move_mul_to);
-
-						if (last_operand->tokenType == TYPE_DATA)
-						{
-							move_last_to = getreg(DATA_INT);
-							asmimmed(MOVL, last_operand->intVal, move_last_to);
-						}
-						else
-						{
-							sym = searchst(last_operand->stringVal);
-							offs = sym->offset - stkframesize;          // NOT NULL CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-							asmld(MOVL, offs, EBX, sym->nameString);    // CONTENTS AREN'T ACTUALLY IN CALLEE-SAVE REG EBX (SEE last_ptr_reg_num)
-							asmrr(IMULL, EBX, move_mul_to);
-							asmrr(ADDL, move_mul_to, move_plus_to);
-							asmop(CLTQ);
-
-							sym = searchst(lhs->operands->stringVal);
-							offs = sym->offset - stkframesize;          // NOT NULL CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-							asmstrr(MOVL, last_ptr_reg_num, offs, 0, lhs->operands->stringVal);
-						}
-					}
-					else
-					{
-						// ?????????????????????????????????????????????????????????????????????????????
-					}
-				}
-				else
-				{
-					if (reg_num >= 0 && reg_num < 16)
-					{
-						asmstrr(MOVL, reg_num, offs, getreg(DATA_INT), sym->nameString);
-					}
-					else
-					{
-						asmstrr(MOVSD, reg_num, offs, getreg(DATA_INT), sym->nameString);
-					}
-				}
-			}
-			/*
-			else {
-				sym = searchst(lhs->operands->operands->stringVal);
-				if (sym) {
-
-					offs = sym->offset - stkframesize;
-					int temp = getreg(DATA_INT);
-
-					last_ptr = lhs->operands->operands; // ??????????????????????????????????????????????????????????????????
-
-					asmld(MOVQ, offs, temp, sym->nameString);
-					offs = lhs->operands->next->intVal;
-
-					if (basicsizes[rhs->dataType] > basicsizes[DATA_INT]) {
-						// see third line in L1 for pasrec
-						if (saved_float_reg != -DOUBLE_MAX) {
-							asmstr(MOVSD, reg_num, offs, temp, "^. ");
-							// saved_float_reg = -DOUBLE_MAX;
-						}
-						else {
-							asmstr(MOVQ, reg_num, offs, temp, "^. ");
-						}
-					}
-					else {
-						if (!nil_flag) {     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-							asmstr(MOVL, reg_num, offs, temp, "^. ");
-						}
-						else {
-							asmstr(MOVQ, reg_num, offs, temp, "^. ");
-						// nil_flag = 0;
-						}
-					}
-
-				}
-			}*/
-		} // end of [array or record]
-		if (lhs->operands)
-		{
-			reg_num = genarith(lhs->operands);
-		}
-
+		//if (leftValue->operands)
+		//{
+		//	reg_num = genarith(leftValue->operands);
+		//}
 		nil_flag = 0;
 		saved_float_reg = -DOUBLE_MAX;
 		saved_rhs_reg = NULL;
 		saved_rhs_reg_num = -1;
 		nested_refs = 0;
-
 		last_ptr = NULL;
 		last_ptr_reg_num = -1;
-
 		nested_ref_stop_at = NULL;
 	} // end of case OP_ASSIGN
 	break;
-	case OP_GOTO:
-	{
-		/* Generate a branch to the label number (see genasm.c). */
-
-		lhs = code->operands;
-		asmjump(JMP, lhs->intVal);
-	}
-	break;
-	case OP_LABEL:
-	{
-		/* Generate a label with the label number (see genasm.c). */
-		lhs = code->operands;
-		asmlabel(lhs->intVal);
-	}
-	break;
 	case IF:
 	{
-		lhs = code->operands;
-		rhs = code->operands->next;
-		int if_label_num = genarith(lhs);
-
-		int else_label_num, endif_label_num;
-		if (rhs->next) else_label_num = nextlabel++;
+		TOKEN exp = code->operands;
+		TOKEN ifStmt = code->operands->next;
+		TOKEN elseStmt = code->operands->next->next;
+		int if_label_num = genarith(exp);
+		int else_label_num;
+		int endif_label_num;
+		if (elseStmt)
+		{
+			else_label_num = nextlabel++;
+		}
 		endif_label_num = nextlabel++;
 
 		// have else
-		if (rhs->next)
+		if (elseStmt)
 		{
 			asmjump(JMP, else_label_num);	// 0 -> else_label
 
 			asmlabel(if_label_num);			// if_label
-			genc(rhs);
+			genc(elseStmt);
 			asmjump(JMP, endif_label_num);	// jump -> endif
 
 			asmlabel(else_label_num);		// else_label
-			genc(rhs->next);
+			genc(elseStmt->next);
 			asmlabel(endif_label_num);		// endif_label
 		}
 		// no else
@@ -982,7 +743,7 @@ void genc(TOKEN code)
 			asmjump(JMP, endif_label_num);	// 0 -> endif_label
 
 			asmlabel(if_label_num);			// if_label
-			genc(rhs);
+			genc(elseStmt);
 			//asmjump(JMP, endif_label_num);	// jump -> endif, not necessary
 
 			asmlabel(endif_label_num);		// endif_label
@@ -993,6 +754,8 @@ void genc(TOKEN code)
 	// procedures. functions will be generate by OP_ASSIGN / genarith
 	case OP_FUNCALL:
 	{
+		TOKEN lhs, rhs;
+		SYMBOL sym;
 		lhs = code->operands;
 		rhs = code->operands->next;
 		SYMBOL argsym;
@@ -1106,83 +869,139 @@ void genc(TOKEN code)
 	break;
 	case OP_FUN_DCL:
 	{
-		lhs = code->operands;
-		rhs = code->operands->next;
-
-		blocknumber = lhs->operands->intVal;
-
-		cannedcode(funtoparseResult);	// print function top code
-
-		TOKEN arglist;
-
-		// store arguments into vars(memory)
-		if (strcmp(lhs->stringVal, "function") == 0)
+		TOKEN functionName = code->operands->operands;
+		TOKEN functionBody = code->operands->operands->next;
+		SYMBOL functionSymbol = searchst(functionName->stringVal);
+		if (functionSymbol != NULL)
 		{
-			arglist = lhs->operands->next->next->next;
+			cannedcode(funcTopCode);
+			SYMBOL func_args = functionSymbol->args;
+			int index = 0;
+			while (func_args)
+			{
+				switch (func_args->basicType)
+				{
+				case DATA_INT:
+				{
+					reg_num = arg_reg[index++];
+					mark_reg_used(reg_num);
+					offs = func_args->offset - stkframesize;
+					asmst(MOVL, reg_num, offs, func_args->nameString);
+				}
+				break;
+				case DATA_REAL:
+				{
+					reg_num = arg_reg[index++];
+					mark_reg_used(reg_num);
+					offs = func_args->offset - stkframesize;
+					asmst(MOVSD, reg_num, offs, func_args->nameString);
+				}
+				break;
+				default:
+					break;
+				}
+				func_args = func_args->next;
+			}
+			genc(functionBody);	// routine body
+			switch (functionSymbol->basicType)
+			{
+			case DATA_INT:
+			{
+				offs = functionSymbol->offset - stkframesize;
+				asmld(MOVL, offs, EAX, functionSymbol->nameString);
+			}
+			break;
+			case DATA_REAL:
+			{
+				offs = functionSymbol->offset - stkframesize;
+				asmld(MOVSD, offs, EAX, functionSymbol->nameString);
+			}
+			default:
+				break;
+			}
+			cannedcode(funBotCode);
 		}
 		else
 		{
-			arglist = lhs->operands->next->next;
+			printf("Function declaration error!\n");
 		}
-		int index = 0;
-		while (arglist)
-		{
-			SYMBOL argsym = searchst(arglist->stringVal);
-			switch (argsym->basicType)
-			{
-			case DATA_INT:
-			{
-				reg_num = arg_reg[index++];
-				mark_reg_used(reg_num);
-				offs = argsym->offset - stkframesize;
-				asmst(MOVL, reg_num, offs, argsym->nameString);
-			}
-			break;
-			case DATA_REAL:
-			{
-				reg_num = arg_reg[index++];
-				mark_reg_used(reg_num);
-				offs = argsym->offset - stkframesize;
-				asmst(MOVSD, reg_num, offs, argsym->nameString);
-			}
-			break;
-			}
-			arglist = arglist->next;
-		}
-		//asmst2(MOVQ, 0);
+		//lhs = code->operands;
+		//rhs = code->operands->next;
 
-		genc(rhs);	// routine body
+		//blocknumber = lhs->operands->intVal;
 
-		TOKEN fun_name = lhs->operands->next;
+		//cannedcode(funcTopCode);	// print function top code
 
-		// store return value into %eax
-		if (strcmp(lhs->stringVal, "function") == 0)
-		{
-			char fun_var[16];
-			int i;
-			fun_var[0] = '_';
-			for (i = 1; i < 16; i++)
-			{
-				fun_var[i] = fun_name->stringVal[i - 1];
-			}
-			SYMBOL sym = searchst(fun_var);
-			switch (sym->basicType)
-			{
-			case DATA_INT:
-			{
-				offs = sym->offset - stkframesize;
-				asmld(MOVL, offs, EAX, sym->nameString);
-			}
-			break;
-			case DATA_REAL:
-			{
-				offs = sym->offset - stkframesize;
-				asmld(MOVSD, offs, EAX, sym->nameString);
-			}
-			break;
-			}
-		}
-		cannedcode(funbotcode);
+		//TOKEN arglist;
+
+		//// store arguments into vars(memory)
+		//if (strcmp(lhs->stringVal, "function") == 0)
+		//{
+		//	arglist = lhs->operands->next->next->next;
+		//}
+		//else
+		//{
+		//	arglist = lhs->operands->next->next;
+		//}
+		//int index = 0;
+		//while (arglist)
+		//{
+		//	SYMBOL argsym = searchst(arglist->stringVal);
+		//	switch (argsym->basicType)
+		//	{
+		//	case DATA_INT:
+		//	{
+		//		reg_num = arg_reg[index++];
+		//		mark_reg_used(reg_num);
+		//		offs = argsym->offset - stkframesize;
+		//		asmst(MOVL, reg_num, offs, argsym->nameString);
+		//	}
+		//	break;
+		//	case DATA_REAL:
+		//	{
+		//		reg_num = arg_reg[index++];
+		//		mark_reg_used(reg_num);
+		//		offs = argsym->offset - stkframesize;
+		//		asmst(MOVSD, reg_num, offs, argsym->nameString);
+		//	}
+		//	break;
+		//	}
+		//	arglist = arglist->next;
+		//}
+		////asmst2(MOVQ, 0);
+
+		//genc(rhs);	// routine body
+
+		//TOKEN fun_name = lhs->operands->next;
+
+		//// store return value into %eax
+		//if (strcmp(lhs->stringVal, "function") == 0)
+		//{
+		//	char fun_var[16];
+		//	int i;
+		//	fun_var[0] = '_';
+		//	for (i = 1; i < 16; i++)
+		//	{
+		//		fun_var[i] = fun_name->stringVal[i - 1];
+		//	}
+		//	SYMBOL sym = searchst(fun_var);
+		//	switch (sym->basicType)
+		//	{
+		//	case DATA_INT:
+		//	{
+		//		offs = sym->offset - stkframesize;
+		//		asmld(MOVL, offs, EAX, sym->nameString);
+		//	}
+		//	break;
+		//	case DATA_REAL:
+		//	{
+		//		offs = sym->offset - stkframesize;
+		//		asmld(MOVSD, offs, EAX, sym->nameString);
+		//	}
+		//	break;
+		//	}
+		//}
+		//cannedcode(funBotCode);
 		break;
 	}
 	}

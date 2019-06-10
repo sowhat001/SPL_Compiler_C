@@ -1,5 +1,17 @@
 ﻿  Process "parse.y" bison file
   Process "lex.l" flex file
+  codegen.c
+d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
+d:\new\new5\pl\spl\spl_compiler\codegen.c(150): warning C4146: 一元负运算符应用于无符号类型，结果仍为无符号类型
+d:\new\new5\pl\spl\spl_compiler\codegen.c(180): warning C4244: “函数”: 从“double”转换到“float”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\codegen.c(500): warning C4101: “temp5”: 未引用的局部变量
+d:\new\new5\pl\spl\spl_compiler\codegen.c(500): warning C4101: “temp4”: 未引用的局部变量
+d:\new\new5\pl\spl\spl_compiler\codegen.c(761): warning C4101: “argsym”: 未引用的局部变量
+  genasm.c
+d:\new\new5\pl\spl\spl_compiler\genasm.c(452): warning C4101: “start”: 未引用的局部变量
+d:\new\new5\pl\spl\spl_compiler\genasm.c(452): warning C4101: “j”: 未引用的局部变量
   lex.flex.c
 d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
   c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
@@ -7,6 +19,11 @@ lex.l(219): warning C4996: 'sscanf': This function or variable may be unsafe. Co
   c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
 lex.l(233): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
+  main.c
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
+d:\new\new5\pl\spl\spl_compiler\main.c(40): warning C4013: “yyparse”未定义；假设外部返回 int
+d:\new\new5\pl\spl\spl_compiler\main.c(43): warning C4013: “gencode”未定义；假设外部返回 int
   parse.tab.c
 d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
   c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
@@ -118,5 +135,14 @@ d:\new\new5\pl\spl\spl_compiler\parsef.c(919): warning C4133: “=”: 从“SYM
 d:\new\new5\pl\spl\spl_compiler\parsef.c(920): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
 d:\new\new5\pl\spl\spl_compiler\parsef.c(953): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
 d:\new\new5\pl\spl\spl_compiler\parsef.c(984): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+  symtab.c
+d:\new\new5\pl\spl\spl_compiler\symtab.c(220): warning C4013: “downLevel”未定义；假设外部返回 int
+d:\new\new5\pl\spl\spl_compiler\symtab.c(368): warning C4477: “printf”: 格式字符串“%3lf”需要类型“double”的参数，但可变参数 1 拥有了类型“int”
+d:\new\new5\pl\spl\spl_compiler\symtab.c(368): warning C4477: “printf”: 格式字符串“%4lf”需要类型“double”的参数，但可变参数 2 拥有了类型“int”
+d:\new\new5\pl\spl\spl_compiler\symtab.c(486): warning C4477: “printf”: 格式字符串“%5lf”需要类型“double”的参数，但可变参数 4 拥有了类型“int”
+d:\new\new5\pl\spl\spl_compiler\symtab.c(486): warning C4477: “printf”: 格式字符串“%5lf”需要类型“double”的参数，但可变参数 5 拥有了类型“int”
+  utils.c
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
   正在生成代码...
   SPL_Compiler.vcxproj -> D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe

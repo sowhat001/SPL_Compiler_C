@@ -1,10 +1,3 @@
-/**********************************************************
- *  File:     symtab.c
- *  Project:  SPL-compiler
- *  Author:   Execution
- *  Modified: Jun 3, 2017
- **********************************************************/
-
 #include "symtab.h"
 
 #pragma warning(disable:4996)

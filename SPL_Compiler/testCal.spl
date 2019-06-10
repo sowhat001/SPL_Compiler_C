@@ -1,0 +1,26 @@
+program test;
+var 
+    a : integer;
+    go : integer;
+begin
+    a := 5;
+    go := 3;
+    if a = 1 then
+    begin
+        go := 1;
+    end
+    else
+    begin
+        if a = 2 then
+        begin
+            go := 1;
+        end
+        else
+        begin
+            go := a; 
+        end
+        ;
+    end
+    ;
+end
+.

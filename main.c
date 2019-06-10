@@ -14,6 +14,7 @@ extern int basicsizes[5];
 extern int lineCount;					/* line count */
 extern TOKEN parseResult;
 extern TOKEN yylval;
+extern int labelNumber;
 
 int yylex(void);
 
@@ -39,6 +40,6 @@ int main()
 	yyparse();
 	printst();
 	printTree(parseResult, 0);
-	while (1);
+	gencode(parseResult, blockoffs[blocknumber], labelNumber - 1);
 	return 0;
 }

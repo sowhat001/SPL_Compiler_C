@@ -39,6 +39,12 @@
     <ClCompile Include="..\parse.tab.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\codegen.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\genasm.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\parsef.h">
@@ -54,6 +60,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\parse.tab.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\codegen.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\genasm.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

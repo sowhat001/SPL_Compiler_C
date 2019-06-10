@@ -5,12 +5,7 @@
  *  Modified: Jun 3, 2017
  **********************************************************/
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "symtab.h"
-#include "token.h"
 
 #pragma warning(disable:4996)
 

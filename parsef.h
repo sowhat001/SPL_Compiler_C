@@ -5,17 +5,6 @@
 #include "symtab.h"
 #include "utils.h"
 
-extern int yylineno;
-extern int lineCount;
-extern int curLevel;					/* current block level */
-extern int blocknumber;       			/* Totle number of blocks */
-extern int outLevel[MAXBLOCKS];			/* out layer */
-extern int blockoffs[MAXBLOCKS];  		/* Storage offsets for each block */
-extern int basicsizes[5];
-extern int lineCount;					/* line count */
-extern char* yytext;
-int labelNumber = 1; 					/* the label order */
-
 /* Arrayref token, like a[2], a is arrayToken, 2 is refExp */
 TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp);
 

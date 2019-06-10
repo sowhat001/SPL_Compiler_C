@@ -1,9 +1,17 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <string.h>
 #include "parsef.h"
-
 #pragma warning(disable:4996)
+
+extern int yylineno;
+extern int lineCount;
+extern int curLevel;					/* current block level */
+extern int blocknumber;       			/* Totle number of blocks */
+extern int outLevel[MAXBLOCKS];			/* out layer */
+extern int blockoffs[MAXBLOCKS];  		/* Storage offsets for each block */
+extern int basicsizes[5];
+extern int lineCount;					/* line count */
+extern char* yytext;
+int labelNumber = 1; 					/* the label order */
 
 /* Arrayref token, like a[2], a is arrayToken, 2 is refExp */
 TOKEN arrayRef(TOKEN arrayToken, TOKEN refExp)
@@ -234,6 +242,7 @@ TOKEN makeBeginStmt(TOKEN beginToken, TOKEN stmt)
 {
 	beginToken->operands = stmt;
 	beginToken->whichToken = OP_PROGN;
+	beginToken->tokenType = TYPE_OPERATOR;
 	return beginToken;
 	/* beginToken(OP_PROGN)
 
@@ -451,6 +460,7 @@ TOKEN makeGoto(TOKEN intToken)
 TOKEN makeIf(TOKEN ifToken, TOKEN expression, TOKEN thenStmt, TOKEN elseStmt)
 {
 	ifToken->operands = expression;
+	ifToken->tokenType = TYPE_OPERATOR;
 	expression = link(expression, thenStmt);
 	expression = link(expression, elseStmt);
 	return ifToken;

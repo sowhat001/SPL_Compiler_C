@@ -1,12 +1,16 @@
 ﻿  Process "parse.y" bison file
   Process "lex.l" flex file
   lex.flex.c
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
 lex.l(219): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
 lex.l(233): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(2263): note: 参见“sscanf”的声明
   parse.tab.c
-parse.tab.c(1583): warning C4013: “yylex”未定义；假设外部返回 int
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
+parse.tab.c(1580): warning C4013: “yylex”未定义；假设外部返回 int
 parse.y(39): warning C4013: “makeProgram”未定义；假设外部返回 int
 parse.y(39): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(43): warning C4013: “link”未定义；假设外部返回 int
@@ -37,7 +41,8 @@ parse.y(106): warning C4047: “=”:“TOKEN”与“int”的间接级别不�
 parse.y(107): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(112): warning C4013: “makeFunDcl”未定义；假设外部返回 int
 parse.y(112): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
-parse.y(114): warning C4013: “instFun”未定义；假设外部返回 int
+parse.y(114): warning C4013: “upLevel”未定义；假设外部返回 int
+parse.y(114): warning C4013: “makeFunHead”未定义；假设外部返回 int
 parse.y(114): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(116): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(118): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
@@ -100,21 +105,18 @@ parse.y(218): warning C4047: “=”:“TOKEN”与“int”的间接级别不�
 parse.y(219): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(220): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(222): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
-parse.tab.c(2427): warning C4013: “yyerror”未定义；假设外部返回 int
+parse.tab.c(2448): warning C4013: “yyerror”未定义；假设外部返回 int
   parsef.c
 d:\new\new5\pl\spl\spl_compiler\parsef.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\new\new5\pl\spl\spl_compiler\parsef.c(745): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\new\new5\pl\spl\spl_compiler\parsef.c(746): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\new\new5\pl\spl\spl_compiler\parsef.c(807): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(883): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(884): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(917): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(948): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
-d:\new\new5\pl\spl\spl_compiler\parsef.c(1045): warning C4013: “findType”未定义；假设外部返回 int
-d:\new\new5\pl\spl\spl_compiler\parsef.c(1045): warning C4047: “函数”:“TOKEN”与“int”的间接级别不同
-d:\new\new5\pl\spl\spl_compiler\parsef.c(1045): warning C4024: “regVar”: 形参和实参 2 的类型不同
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
+d:\new\new5\pl\spl\spl_compiler\parsef.c(781): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(782): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(843): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(919): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(920): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(953): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(984): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
   正在生成代码...
-parse.tab.obj : error LNK2019: 无法解析的外部符号 _instFun，该符号在函数 _yyparse 中被引用
-parsef.obj : error LNK2019: 无法解析的外部符号 _findType，该符号在函数 _makeFunHead 中被引用
-D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe : fatal error LNK1120: 2 个无法解析的外部命令
+  SPL_Compiler.vcxproj -> D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe

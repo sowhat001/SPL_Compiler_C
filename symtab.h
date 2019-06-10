@@ -8,6 +8,10 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "token.h"
 
  /* Define kinds of symbols.  The kind field should be one of these. */

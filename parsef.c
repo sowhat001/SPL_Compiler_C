@@ -403,7 +403,7 @@ funcName's tokenType, whichToken, dataType are changed. dataType is return value
 TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 {
 	funcName->tokenType = TYPE_OPERATOR;
-	funcName->whichToken = OP_FUNCALL;
+	funcName->whichToken = OP_FUN_CALL;
 	SYMBOL funSymbol = NULL;
 	char fname[16];
 	fname[0] = '_';

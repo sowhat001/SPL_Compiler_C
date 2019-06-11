@@ -201,7 +201,7 @@ void makeblit(char s[], int labeln);
 void outlits();
 
 /* Print a section of canned code.  Quits on an empty string.  */
-void cannedcode(char* lines[]);
+void directPrint(char* lines[]);
 
 void asmlabelstr(char name[]);
 // imull

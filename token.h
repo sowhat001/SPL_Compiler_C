@@ -43,7 +43,7 @@ typedef struct _token
 #define OP_INT_TO_REAL		1
 #define OP_REAL_TO_INT		2
 #define OP_STRING_TO_CHAR	3
-#define OP_FUNCALL			4
+#define OP_FUN_CALL			4
 #define OP_LABEL			5
 #define OP_GOTO				6
 #define OP_PROGN			7

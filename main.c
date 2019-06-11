@@ -40,6 +40,6 @@ int main()
 	yyparse();
 	printst();
 	printTree(parseResult, 0);
-	gencode(parseResult, blockoffs[blocknumber], labelNumber - 1);
+	genCode(parseResult, blockoffs[blocknumber], labelNumber - 1);
 	return 0;
 }

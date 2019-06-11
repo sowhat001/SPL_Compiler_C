@@ -1,78 +1,81 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
-#include "parsef.h"	/* Contains int typedef */
+#include "symtab.h"
+#include "genasm.h"
+#include "utils.h"
+#include "parsef.h"
 
-int at_least_one_float(int lhs_reg, int rhs_reg);
 
-int both_float(int lhs_reg, int rhs_reg);
+#define NUM_argRegsS	4
+#define NUM_INT_REGS    8
+#define NUM_FP_REGS     24
+#define NUM_REGS        32
 
-/* Clear register used tables to mark all registers free.  */
-void clearreg();
+const int argRegs[NUM_argRegsS] = { EDI, ESI, EDX, ECX };
 
-/* find the op number that is equivalent to named function, if any */
-int findfunop(char str[]);
+char* funcTopCode[] =
+{
+  "	pushq	%rbp			# save base pointer on stack",
+  "	movq	%rsp, %rbp		# move stack pointer to base pointer",
+  "	subq	$32, %rsp		# make space for this stack frame",
+  "",
+};
+char* funBotCode[] =
+{
+	"	movq    %rbp, %rsp",
+	"	popq    %rbp",
+	"	ret",
+	"",
+};
 
-void free_reg(int reg_num);
 
-/* test if there is a function call within code: 1 if true, else 0 */
-int funcallin(TOKEN code);
+extern int blocknumber;
+extern int curLevel;
+extern int basicsizes[5];
 
-/* Generate code for array references and pointers */
-/* In Pascal, a (^ ...) can only occur as first argument of an aref. */
-/* If storereg < 0, generates a load and returns register number;
-   else, generates a store from storereg. */
-int genaref(TOKEN code, int storereg);
+int nextLabel;    /* Next available label number */
+int stackFrameSize;   /* total stack frame size */
 
-/* Generate arithmetic expression, return a register number */
-int genarith(TOKEN code);
-
-/* Generate code for a statement */
-void genc(TOKEN code);
+int regs[NUM_REGS] = { 0 };
 
 /* Top-level entry for code generator.
-   parseResult    = pointer to code = parseresult: (program foo (output) (progn ...))
-   varsize  = size of local storage in bytes = blockoffs[blocknumber]
-   maxlabel = maximum label number used so far = labelnumber    */
-void gencode(TOKEN parseResult, int varsize, int maxlabel);
+   parseResult    = pointer to code:  (program foo (output) (progn ...))
+   varsize  = size of local storage in bytes
+   maxlabel = maximum label number used so far
 
-/* Generate code for a function call */
-int genfun(TOKEN code);
+Add this line to the end of your main program:
+	genCode(parseresult, blockoffs[blocknumber], labelnumber);
+The generated code is printed out; use a text editor to extract it for
+your .s file.
+		 */
 
-int genop(TOKEN code, int rhs_reg, int lhs_reg);
+void genCode(TOKEN parseResult, int varsize, int maxlabel);
 
-/* Get a register */
-int getreg(int kind);
+/* Trivial version: always returns RBASE + 0 */
+/* Get a register.   */
+/* Need a type parameter or two versions for INTEGER or REAL */
+int getReg(int kind);
 
-int is_equal(TOKEN a, TOKEN b);
+/* Trivial version */
+/* Generate code for arithmetic expression, return a register number */
+int genFunCall(TOKEN code);
 
-int is_fp_reg(int reg_num);
+int genExp(TOKEN code);
 
-int is_gen_purpose_reg(int reg_num);
+int genOp(TOKEN code, int lhs_reg, int rhs_reg);
 
-/* Mark a register unused */
-void mark_reg_unused(int reg);
+/* Generate code for a Statement from an intermediate-code form */
+void genc(TOKEN code);
 
-/* Mark a register used */
-void mark_reg_used(int reg);
+void resetRegs();
 
-/* Make a register non-volatile by moving it if necessary.
-   Result is the (possibly new) register number.   */
-int nonvolatile(int reg);
+int hasFloat(int lhs_reg, int rhs_reg);
 
-int num_funcalls_in_tree(TOKEN tok, int num);
+int bothFloat(int lhs_reg, int rhs_reg);
 
-void reset_regs(void);
+void freeReg(int regNum);
 
-/* Restore caller-saves floating point registers from stack if in use */
-void restorereg();
-
-/* Save caller-saves floating point registers on stack if in use */
-void savereg();
-
-int search_tree_str(TOKEN tok, char str[]);
-
-/* find the correct MOV op depending on type of code */
-int moveop(TOKEN code);
+void setRegUsed(int regNum);
 
 #endif

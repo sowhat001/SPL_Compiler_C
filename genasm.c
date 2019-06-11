@@ -119,13 +119,14 @@ static int   stackframesize;  /* size of stack frame variables */
 
 
 /* Print a section of canned code.  Quits on an empty string.  */
-void cannedcode(char* lines[])
+void directPrint(char* lines[])
 {
 	int i;
 	i = 0;
 	while (lines[i][0] != 0)
 	{
-		printf("%s\n", lines[i]); i++;
+		printf("%s\n", lines[i]); 
+		i++;
 	}
 }
 
@@ -143,16 +144,16 @@ int asmentry(char name[], int size)
 	/*     GCC requires stack aligned to 16-byte boundary */
 	/*     Add to make space for a floating temporary just below rbp */
 	stackframesize = roundup(size + 16, 16);
-	cannedcode(toparseResult);          /* canned stuff at top */
+	directPrint(toparseResult);          /* canned stuff at top */
 	printf("        .file   \"%s\"\n", "foo");
 	printf("        .text\n");
 	printf(".globl %s\n", name);
 	printf("        .type   %s, @function\n", name);
 	printf("%s:\n", name);
-	cannedcode(toparseResultb);
+	directPrint(toparseResultb);
 	printf("        subq\t$%d, %%rsp \t  # make space for this stack frame\n",
 		stackframesize);
-	cannedcode(toparseResultc);
+	directPrint(toparseResultc);
 	return stackframesize;
 }
 
@@ -160,7 +161,7 @@ int asmentry(char name[], int size)
 /* This is just canned code following calling conventions for target machine */
 void asmexit(char name[])
 {
-	cannedcode(bottomcode);
+	directPrint(bottomcode);
 	printf("        .size   %s, .-%s\n", name, name);
 	outlits();                         /* Output literals */
 }
@@ -450,8 +451,8 @@ double d;
 void outlits()
 {
 	int i, j, start; double d; int ida, idb;
-	cannedcode(bottomcodeb);
-	if (fnegused) cannedcode(fnegconst);
+	directPrint(bottomcodeb);
+	if (fnegused) directPrint(fnegconst);
 	for (i = 0; i < nilit; i++)
 	{
 		printf("\t.align  4\n");
@@ -480,7 +481,7 @@ void outlits()
 		printf("\t.long\t%d\n", ida);
 	};
 	printf("\n");
-	cannedcode(bottomcodec);
+	directPrint(bottomcodec);
 }
 
 // imull

@@ -5,21 +5,20 @@
 #include "genasm.h"
 
 /* Print strings for registers */
-/* EBX is put in position 3 since it is callee-save */
-char* regpr[] = { "%eax", "%ecx", "%edx", "%ebx",
-				 "%esi", "%edi", "%esp", "%ebp",
-				 "%r8d", "%r9d", "%r10d", "%r11d",
-				 "%r12d", "%r13d", "%r14d", "%r15d",
+char* regpr[] = { "eax", "ebx", "ecx", "edx",
+				 "esi", "edi", "esp", "ebp",
+				 "r8d", "r9d", "r10d", "r11d",
+				 "r12d", "r13d", "r14d", "r15d",
 				 "%xmm0",  "%xmm1",   "%xmm2",  "%xmm3",
 				 "%xmm4",  "%xmm5",  "%xmm6",  "%xmm7",
 				 "%xmm8",  "%xmm9",  "%xmm10", "%xmm11",
 				 "%xmm12", "%xmm13", "%xmm14", "%xmm15" };
 
 /* Print strings for 64-bit versions of registers */
-char* dregpr[] = { "%rax", "%rcx", "%rdx", "%rbx",
-				  "%rsi", "%rdi", "%rsp", "%rbp",
-				  "%r8", "%r9", "%r10", "%r11",
-				  "%r12", "%r13", "%r14", "%r15" };
+char* dregpr[] = { "rax", "rbx", "rcx", "rdx",
+				  "rsi", "rdi", "rsp", "rbp",
+				  "r8", "r9", "r10", "r11",
+				  "r12", "r13", "r14", "r15" };
 
 /* Define jump op codes */
 
@@ -34,9 +33,9 @@ char* jumpcompr[] = { "", "if     !=", "if     ==", "if     >=", "if     <",
 
 char* instpr[] =
 /*   0        1       2       3      4       5      6        7  */
-{ "movl", "movsd", "movq", "cltq", "addl", "subl", "imull", "divl",
+{ "mov", "movsd", "movq", "cltq", "add", "sub", "mul", "div",
 /*   8     9     10       11     12     13       14      15  */
-  "andl", "negl", "orl", "notl", "cmpl", "addsd", "subsd", "mulsd",
+  "and", "neg", "or", "not", "cmp", "addsd", "subsd", "mulsd",
 	/*   16       17      18      19      */
 	  "divsd", "negsd", "cmpq", "cmpsd",
 	/*   20      21       22      23      24      25     26     */
@@ -169,7 +168,7 @@ void asmexit(char name[])
 /* Make a label */
 void asmlabel(int labeln)
 {
-	printf(".L%d:\n", labeln);
+	printf("L%d:\n", labeln);
 }
 void asmlabelstr(char name[])
 {
@@ -187,7 +186,7 @@ void asmcall(char name[])
 /* Generate a jump instruction.  Example:  asmjump(JG, 17);   */
 void asmjump(int code, int labeln)
 {
-	printf("\t%s\t.L%d \t\t\t#  jump %s\n",
+	printf("\t%s\tL%d \t\t\t#  jump %s\n",
 		jumppr[code], labeln, jumpcompr[code]);
 }
 
@@ -202,7 +201,7 @@ char* regnm(int reg, int instr)
 /* Example:  asmimmed(ADDL, 1, EAX);   Adds 1 to EAX  */
 void asmimmed(int inst, int ival, int reg)
 {
-	printf("\t%s\t$%d,%s", instpr[inst], ival, regnm(reg, inst));
+	printf("\t%s\t%s,%d", instpr[inst], regnm(reg, inst), ival);
 	if (inst == MOVL || inst == MOVSD || inst == MOVQ)
 		printf("         \t#  %d -> %s\n", ival, regnm(reg, inst));
 	else printf("         \t#  %s %s %d -> %s\n",
@@ -221,8 +220,7 @@ void asmop(int inst)
 /* Example:  asmrr(ADDL, ECX, EAX);  EAX + ECX -> EAX */
 void asmrr(int inst, int srcreg, int dstreg)
 {
-	printf("\t%s\t%s,%s", instpr[inst], regnm(srcreg, inst),
-		regnm(dstreg, inst));
+	printf("\t%s\t%s,%s", instpr[inst], regnm(srcreg, inst), regnm(dstreg, inst));
 	if (inst == CMPL || inst == CMPQ || inst == CMPSD)
 		printf("           \t#  compare %s - %s\n", regnm(dstreg, inst),
 			regnm(srcreg, inst));
@@ -237,7 +235,7 @@ void asmrr(int inst, int srcreg, int dstreg)
 	  asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
 void asmld(int inst, int off, int reg, char str[])
 {
-	printf("\t%s\t%d(%%rbp),%s", instpr[inst], off, regnm(reg, inst));
+	printf("\t%s\t%s, [ebp%d]", instpr[inst], regnm(reg, inst), off);
 	printf("     \t#  %s -> %s\n", str, regnm(reg, inst));
 }
 
@@ -245,7 +243,7 @@ void asmld(int inst, int off, int reg, char str[])
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
 void asmst(int inst, int reg, int off, char str[])
 {
-	printf("\t%s\t%s,%d(%%rbp)", instpr[inst], regnm(reg, inst), off);
+	printf("\t%s\t[ebp%d], %s ", instpr[inst], off, regnm(reg, inst));
 	printf("     \t#  %s -> %s\n", regnm(reg, inst), str);
 }
 
@@ -484,9 +482,8 @@ void outlits()
 	directPrint(bottomcodec);
 }
 
-// imull
 void asm1r(int inst, int reg)
 {
 	printf("\t%s\t%s\t\t", instpr[inst], regpr[reg]);
-	printf("\t#  %s * %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
+	printf("\t#  %s / %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
 }

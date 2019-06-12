@@ -20,7 +20,6 @@ int yylex(void);
 
 int main()
 {
-	printf("BEGIN\n");
 	initPrint();
 	//int temp = 0;
 	//while (1)
@@ -38,8 +37,8 @@ int main()
 
 	initsyms();
 	yyparse();
-	printst();
-	printTree(parseResult, 0);
-	genCode(parseResult, blockoffs[blocknumber], labelNumber - 1);
+	//printst();
+	//printTree(parseResult, 0);
+	genCode(parseResult, blockoffs[blocknumber], labelNumber - 1);	
 	return 0;
 }

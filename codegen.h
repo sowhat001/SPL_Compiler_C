@@ -17,6 +17,9 @@ const int argRegs[NUM_argRegsS] = { EDI, ESI, EDX, ECX };
 char* funcTopCode[] =
 {
   "	pushq	%rbp			# save base pointer on stack",
+  "	pushq	%rbx			# save %rbx", 
+  "	pushq	%rcx			# save %rcx",
+  "	pushq	%rdx			# save %rdx",
   "	movq	%rsp, %rbp		# move stack pointer to base pointer",
   "	subq	$32, %rsp		# make space for this stack frame",
   "",
@@ -24,7 +27,10 @@ char* funcTopCode[] =
 char* funBotCode[] =
 {
 	"	movq    %rbp, %rsp",
-	"	popq    %rbp",
+	"	popq	%rdx",
+	"	popq	%rcx",
+	"	popq	%rbx",
+	"	popq	%rbp",
 	"	ret",
 	"",
 };

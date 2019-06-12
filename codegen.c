@@ -57,7 +57,7 @@ int getReg(int kind)
 	{
 		if (regs[i] == 0)
 		{
-			if (i == EDI || i == ESI || i == EDX || i == ECX)
+			if (i == EDI || i == ESI || i == ESP || i == EBP)
 			{
 				continue;
 			}
@@ -115,9 +115,9 @@ int genExp(TOKEN code)
 			break;
 		}
 
-		if (funSym)
+		if (code->whichToken == OP_FUN_CALL)
 		{
-			ret = getReg(funSym->dataType->basicType);
+			ret = genFunCall(code);
 		}
 		else
 		{
@@ -536,6 +536,11 @@ int genFunCall(TOKEN code)
 	else
 	{
 		int count = 0;
+		char fname[16];
+		fname[0] = '_';
+		strcpy(fname + 1, code->stringVal);
+		SYMBOL fsym = searchst(fname);		// function symbol
+
 		while (argList != NULL)
 		{
 			int temp = genExp(argList);		// put one arg's value in temp
@@ -548,7 +553,11 @@ int genFunCall(TOKEN code)
 			argList = argList->next;
 		}
 		asmcall(code->stringVal);
-		ret = EAX;
+		setRegUsed(EAX);		// return is EAX
+		int temp = getReg(fsym->basicType);
+		asmrr(MOVL, EAX, temp);
+		freeReg(EAX);
+		ret = temp;
 		for (int i = 0; i < count; i++)
 		{
 			freeReg(argRegs[i]);

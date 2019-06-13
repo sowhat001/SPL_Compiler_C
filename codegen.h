@@ -3,6 +3,7 @@
 
 #include "symtab.h"
 #include "genasm.h"
+#include "token.h"
 #include "utils.h"
 #include "parsef.h"
 
@@ -16,15 +17,21 @@ const int argRegs[NUM_argRegsS] = { EDI, ESI, EDX, ECX };
 
 char* funcTopCode[] =
 {
-  "	pushq	%rbp			# save base pointer on stack",
-  "	movq	%rsp, %rbp		# move stack pointer to base pointer",
-  "	subq	$32, %rsp		# make space for this stack frame",
+  "	push	rbp				; save base pointer on stack",
+  "	mov	rbp, rsp		; move stack pointer to base pointer",
+  "	sub	rsp, 32			; make space for this stack frame",
+  "	push	rbx			; make space for this stack frame",
+  "	push	rcx			; make space for this stack frame",
+  "	push	rdx			; make space for this stack frame",
   "",
 };
 char* funBotCode[] =
 {
-	"	movq    %rbp, %rsp",
-	"	popq    %rbp",
+	"	pop	rdx			; make space for this stack frame",
+	"	pop	rcx			; make space for this stack frame",
+	"	pop	rbx			; make space for this stack frame",
+	"	mov	rsp, rbp",
+	"	pop	rbp",
 	"	ret",
 	"",
 };

@@ -12,7 +12,7 @@ int stackFrameSize;   /* total stack frame size */
    varsize  = size of local storage in bytes
    maxlabel = maximum label number used so far
 
-Add this line to the end of your main program:
+_ADD this line to the end of your main program:
 	genCode(parseresult, blockoffs[blocknumber], labelnumber);
 The generated code is printed out; use a text editor to extract it for
 your .s file.
@@ -84,7 +84,7 @@ int genExp(TOKEN code)
 			case DATA_INT:
 			{
 				ret = getReg(DATA_INT);
-				asmimmed(MOVL, code->intVal, ret);
+				asmimmed(MOV, code->intVal, ret);
 				break;
 			}
 			case DATA_REAL:
@@ -109,9 +109,9 @@ int genExp(TOKEN code)
 		if (idSym->nestLevel == 0)
 		{
 			int temp_reg = getReg(DATA_INT);
-			asmld(MOVL, 0, temp_reg, "static link");
+			asmld(MOV, 0, temp_reg, "static link");
 			ret = getReg(DATA_INT);
-			asmld(MOVL, idSym->offset - stackFrameSize, ret, code->stringVal);
+			asmld(MOV, idSym->offset - stackFrameSize, ret, code->stringVal);
 			break;
 		}
 
@@ -127,11 +127,9 @@ int genExp(TOKEN code)
 			{
 				if (idSym->dataType->kind != SYM_ARRAY)
 				{
-					asmld(MOVL, idSym->offset - stackFrameSize, ret, code->stringVal);
+					asmld(MOV, idSym->offset - stackFrameSize, ret, code->stringVal);
 				}
-
 			}
-			// DATA_REAL
 			else
 			{
 				asmld(MOVSD, idSym->offset - stackFrameSize, ret, code->stringVal);
@@ -147,46 +145,9 @@ int genExp(TOKEN code)
 		}
 		else
 		{
-			int leftReg = -1;
-			int rightReg = -1;
-			if (code->whichToken == MOD)
-			{
-				leftReg = genExp(code->operands);
-				rightReg = genExp(code->operands->next);
-				asmrr(MOVL, leftReg, EAX);
-				asmrr(MOVL, rightReg, EDX);
-				asmcall("mod");
-				ret = EAX;
-				setRegUsed(ret);
-			}
-			else if (code->whichToken == MUL)
-			{
-				leftReg = genExp(code->operands);
-				rightReg = genExp(code->operands->next);
-				if (leftReg != EAX)
-				{
-					asmrr(MOVL, leftReg, EAX);
-				}
-				asm1r(IMULL, rightReg);
-				ret = EAX;
-				setRegUsed(ret);
-			}
-			else if (code->whichToken == MINUS)		// sub %eax, %ebx   <-- %ebx = %ebx - %eax
-			{
-				if (code->operands->next != NULL)	// a-b
-				{
-					rightReg = genExp(code->operands->next);
-					leftReg = genExp(code->operands);
-					ret = genOp(code, leftReg, rightReg);
-				}
-			}
-			else		// e.g. a+b   a->%eax  b->%ebx   %eax = %eax+%ebx
-			{
-				leftReg = genExp(code->operands);
-				rightReg = genExp(code->operands->next);
-				ret = genOp(code, leftReg, rightReg);
-			}
-			freeReg(rightReg);
+			int leftReg = genExp(code->operands);
+			int rightReg = genExp(code->operands->next);
+			ret = genOp(code, leftReg, rightReg);
 		}
 		break;
 	}
@@ -209,9 +170,11 @@ int genOp(TOKEN code, int leftReg, int rightReg)
 			}
 			else
 			{
-				asmrr(ADDL, rightReg, leftReg);
+				asmrr(ADD, rightReg, leftReg);
 			}
 			ret = leftReg;
+			setRegUsed(ret);
+			freeReg(rightReg);
 			break;
 		}
 		case MINUS:
@@ -222,85 +185,149 @@ int genOp(TOKEN code, int leftReg, int rightReg)
 			}
 			else
 			{
-				asmrr(SUBL, rightReg, leftReg);
+				asmrr(SUB, rightReg, leftReg);
 			}
 			ret = leftReg;
+			setRegUsed(ret);
+			freeReg(rightReg);
 			break;
 		}
 		case MUL:
 		{
 			if (hasFloat(leftReg, rightReg))
 			{
-				asmrr(MULSD, rightReg, leftReg);
+				
 			}
 			else
 			{
-				asmrr(IMULL, rightReg, leftReg);
+				ret = EAX;
+				if (regs[EAX] && leftReg != EAX)
+				{
+					asmrr(MOV, EAX, getReg(DATA_INT));
+					asmrr(MOV, leftReg, EAX);
+					freeReg(leftReg);
+				}
+				else if (leftReg != EAX)
+				{
+					asmrr(MOV, leftReg, EAX);
+					freeReg(leftReg);
+				}
+				asm1r(_MUL, rightReg);
+				freeReg(rightReg);
+				setRegUsed(ret);
+				setRegUsed(EDX);
 			}
-			ret = leftReg;
 			break;
 		}
-		case REAL_DIV:
+		case DIV:
 		{
 			if (hasFloat(leftReg, rightReg))
 			{
-				asmrr(DIVSD, rightReg, leftReg);
+
 			}
 			else
 			{
-				asmrr(DIVL, rightReg, leftReg);
+				ret = EAX;
+				if (regs[EAX] && leftReg != EAX)
+				{
+					asmrr(MOV, EAX, getReg(DATA_INT));
+					asmrr(MOV, leftReg, EAX);
+					freeReg(leftReg);
+				}
+				else if (leftReg != EAX)
+				{
+					asmrr(MOV, leftReg, EAX);
+					freeReg(leftReg);
+				}
+				if (regs[EDX])
+				{
+					asmrr(MOV, EDX, getReg(DATA_INT));
+				}
+				asmimmed(MOV, 0, EDX);
+				asm1r(_DIV, rightReg);
+				freeReg(rightReg);
+				setRegUsed(ret);
+				setRegUsed(EDX);
 			}
-			ret = leftReg;
+			break;
+		}
+
+		case REAL_DIV:
+		{
+
 			break;
 		}
 		case MOD:
 		{
-			ret = getReg(DATA_INT);
-			asmrr(MOVL, leftReg, ret);
-			asmrr(DIVL, rightReg, leftReg);
-			asmrr(IMULL, rightReg, leftReg);
-			asmrr(SUBL, leftReg, ret);
+			if (hasFloat(leftReg, rightReg))
+			{
+
+			}
+			else
+			{
+				ret = EDX;
+				if (regs[EAX] && leftReg != EAX)
+				{
+					asmrr(MOV, EAX, getReg(DATA_INT));
+					asmrr(MOV, leftReg, EAX);
+					freeReg(leftReg);
+				}
+				else if (leftReg != EAX)
+				{
+					asmrr(MOV, leftReg, EAX);
+					freeReg(leftReg);
+				}
+				if (regs[EDX])
+				{
+					asmrr(MOV, EDX, getReg(DATA_INT));
+				}
+				asmimmed(MOV, 0, EDX);
+				asm1r(_DIV, rightReg);
+				freeReg(rightReg);
+				setRegUsed(ret);
+				setRegUsed(EDX);
+			}
 			break;
 		}
 		case EQ:
 		{
 			ret = nextLabel++;
-			asmrr(CMPL, rightReg, leftReg);
+			asmrr(CMP, leftReg, rightReg);
 			asmjump(JE, ret);
 			break;
 		}
 		case NE:
 		{
 			ret = nextLabel++;
-			asmrr(CMPL, rightReg, leftReg);
+			asmrr(CMP, leftReg, rightReg);
 			asmjump(JNE, ret);
 			break;
 		}
 		case LT:
 		{
 			ret = nextLabel++;
-			asmrr(CMPL, rightReg, leftReg);
+			asmrr(CMP, leftReg, rightReg);
 			asmjump(JL, ret);
 			break;
 		}
 		case LE:
 		{
 			ret = nextLabel++;
-			asmrr(CMPL, rightReg, leftReg);
+			asmrr(CMP, leftReg, rightReg);
 			asmjump(JLE, ret);
 			break;
 		}
 		case GT:
 		{
 			ret = nextLabel++;
-			asmrr(CMPL, rightReg, leftReg);
+			asmrr(CMP, leftReg, rightReg);
 			asmjump(JG, ret);
 			break;
 		}
 		case GE:
 		{
 			ret = nextLabel++;
-			asmrr(CMPL, rightReg, leftReg);
+			asmrr(CMP, leftReg, rightReg);
 			asmjump(JGE, ret);
 			break;
 		}
@@ -308,13 +335,14 @@ int genOp(TOKEN code, int leftReg, int rightReg)
 		{
 			ret = getReg(DATA_REAL);			
 			asmfloat(rightReg, ret);
-			freeReg(leftReg);
-			freeReg(rightReg);
+			setRegUsed(ret);
 			break;
 		}
 		default:
 			break;
 	}
+	freeReg(leftReg);
+	freeReg(rightReg);
 	return ret;
 }
 
@@ -357,7 +385,7 @@ void genc(TOKEN code)
 				switch (code->dataType)
 				{
 				case DATA_INT:
-					asmst(MOVL, rightReg, offset, leftValue->stringVal);
+					asmst(MOV, rightReg, offset, leftValue->stringVal);
 					break;
 				case DATA_REAL:
 					asmst(MOVSD, rightReg, offset, leftValue->stringVal);
@@ -431,7 +459,7 @@ void genc(TOKEN code)
 						int argReg = argRegs[index++];
 						setRegUsed(argReg);
 						int offset = func_args->offset - stackFrameSize;
-						asmst(MOVL, argReg, offset, func_args->nameString);
+						asmst(MOV, argReg, offset, func_args->nameString);
 					}
 					break;
 					case DATA_REAL:
@@ -453,7 +481,7 @@ void genc(TOKEN code)
 				case DATA_INT:
 				{
 					int offset = func_ret->offset - stackFrameSize;
-					asmld(MOVL, offset, EAX, func_ret->nameString);
+					asmld(MOV, offset, EAX, func_ret->nameString);
 				}
 				break;
 				case DATA_REAL:
@@ -489,7 +517,7 @@ int genFunCall(TOKEN code)
 			SYMBOL sym = searchst(argList->stringVal);
 			if (argList->dataType == DATA_STRING)
 			{
-				asmlitarg(nextLabel, argRegs[0]);		// move the addr of string to EDI 
+				asmlitarg(nextLabel, argRegs[0]);		// move the _ADDr of string to EDI 
 				asmcall(code->stringVal);
 				makeblit(argList->stringVal, nextLabel++);
 			}
@@ -505,8 +533,8 @@ int genFunCall(TOKEN code)
 			else if (argList->dataType == DATA_INT)
 			{
 				int temp = getReg(DATA_INT);
-				asmld(MOVL, sym->offset - stackFrameSize, temp, sym->nameString);
-				asmrr(MOVL, temp, EDI);
+				asmld(MOV, sym->offset - stackFrameSize, temp, sym->nameString);
+				asmrr(MOV, temp, EDI);
 				asmcall(code->stringVal);
 			}
 			else if (argList->dataType == DATA_REAL)
@@ -521,14 +549,14 @@ int genFunCall(TOKEN code)
 		{
 			SYMBOL argSym = searchst(argList->stringVal);
 			int offset = argSym->offset - stackFrameSize;
-			asmld(MOVL, offset, EAX, argList->stringVal);		// get local variable from stack
-			asmrr(MOVL, EAX, argRegs[0]);		// pass value to the argument register EDI
+			asmld(MOV, offset, EAX, argList->stringVal);		// get local variable from stack
+			asmrr(MOV, EAX, argRegs[0]);		// pass value to the argument register EDI
 			asmcall(code->stringVal);
 		}
 		else if (argList->tokenType == TYPE_OPERATOR)
 		{
 			int des_reg = genExp(argList);		// generate asm code for the expr, get the value in des_reg
-			asmrr(MOVL, des_reg, argRegs[0]);
+			asmrr(MOV, des_reg, argRegs[0]);
 			asmcall(code->stringVal);
 		}
 	}
@@ -546,7 +574,7 @@ int genFunCall(TOKEN code)
 			int temp = genExp(argList);		// put one arg's value in temp
 			if (temp != argRegs[count])
 			{
-				asmrr(MOVL, temp, argRegs[count]); // score values into arg reg
+				asmrr(MOV, temp, argRegs[count]); // score values into arg reg
 				setRegUsed(argRegs[count++]);
 				freeReg(temp);
 			}
@@ -555,7 +583,7 @@ int genFunCall(TOKEN code)
 		asmcall(code->stringVal);
 		setRegUsed(EAX);		// return is EAX
 		int temp = getReg(fsym->basicType);
-		asmrr(MOVL, EAX, temp);
+		asmrr(MOV, EAX, temp);
 		freeReg(EAX);
 		ret = temp;
 		for (int i = 0; i < count; i++)

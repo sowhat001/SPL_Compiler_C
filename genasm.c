@@ -5,21 +5,20 @@
 #include "genasm.h"
 
 /* Print strings for registers */
-/* EBX is put in position 3 since it is callee-save */
-char* regpr[] = { "%eax", "%ecx", "%edx", "%ebx",
-				 "%esi", "%edi", "%esp", "%ebp",
-				 "%r8d", "%r9d", "%r10d", "%r11d",
-				 "%r12d", "%r13d", "%r14d", "%r15d",
+char* regpr[] = { "eax", "ebx", "ecx", "edx",
+				 "esi", "edi", "esp", "ebp",
+				 "r8d", "r9d", "r10d", "r11d",
+				 "r12d", "r13d", "r14d", "r15d",
 				 "%xmm0",  "%xmm1",   "%xmm2",  "%xmm3",
 				 "%xmm4",  "%xmm5",  "%xmm6",  "%xmm7",
 				 "%xmm8",  "%xmm9",  "%xmm10", "%xmm11",
 				 "%xmm12", "%xmm13", "%xmm14", "%xmm15" };
 
 /* Print strings for 64-bit versions of registers */
-char* dregpr[] = { "%rax", "%rcx", "%rdx", "%rbx",
-				  "%rsi", "%rdi", "%rsp", "%rbp",
-				  "%r8", "%r9", "%r10", "%r11",
-				  "%r12", "%r13", "%r14", "%r15" };
+char* dregpr[] = { "rax", "rbx", "rcx", "rdx",
+				  "rsi", "rdi", "rsp", "rbp",
+				  "r8", "r9", "r10", "r11",
+				  "r12", "r13", "r14", "r15" };
 
 /* Define jump op codes */
 
@@ -34,9 +33,9 @@ char* jumpcompr[] = { "", "if     !=", "if     ==", "if     >=", "if     <",
 
 char* instpr[] =
 /*   0        1       2       3      4       5      6        7  */
-{ "movl", "movsd", "movq", "cltq", "addl", "subl", "imull", "divl",
+{ "mov", "movsd", "movq", "cltq", "add", "sub", "mul", "div",
 /*   8     9     10       11     12     13       14      15  */
-  "andl", "negl", "orl", "notl", "cmpl", "addsd", "subsd", "mulsd",
+  "and", "neg", "or", "not", "cmp", "addsd", "subsd", "mulsd",
 	/*   16       17      18      19      */
 	  "divsd", "negsd", "cmpq", "cmpsd",
 	/*   20      21       22      23      24      25     26     */
@@ -52,51 +51,7 @@ char* instcompr[] = { "->", "->",  "->", "sign-extend", "+", "-", "*", "/",
 	/*   20      21       22      23      24      25     26     */
 		"+",     "-",     "*",    "&",   "negq", "orq", "notq" };
 char* toparseResult[] = {
-  "# ---------------------- Beginning of Generated Code --------------------",
-  "" };
-
-char* toparseResultb[] = {
-  ".LFB0:",
-  "	.cfi_startproc",
-  "	pushq	%rbp              # save base pointer on stack",
-  "	.cfi_def_cfa_offset 16",
-  "	movq	%rsp, %rbp        # move stack pointer to base pointer",
-  "	.cfi_offset 6, -16",
-  "	.cfi_def_cfa_register 6",
-  "" };
-
-char* toparseResultc[] = {
-  "	movq	%rbx, %r9        # save %rbx (callee-saved) in %r9",
-  "# ------------------------- begin Your code -----------------------------",
-  "" };
-
-char* bottomcode[] = {
-  "# ----------------------- begin Epilogue code ---------------------------",
-  "	movq	%r9, %rbx        # restore %rbx (callee-saved) from %r9",
-  "        leave",
-  "        ret",
-  "        .cfi_endproc",
-  ".LFE0:",
-  "" };
-
-char* bottomcodeb[] = {
-  "# ----------------- end Epilogue; Literal data follows ------------------",
-  "        .section        .rodata",
-  "" };
-
-char* bottomcodec[] = {
-  "        .ident  \"Compiler Principle - Spring 2017\"",
-  /* "        .section     .note.GNU-stack,\"\",@progbits", /* need this? */
-  "" };
-
-/* constant needed for floating negation */
-char* fnegconst[] = {
-  "	.align 16",
-  ".LC666:                    # constant for floating negation",
-  "	.long	0",
-  "	.long	-2147483648",
-  "	.long	0",
-  "	.long	0",
+  "; ---------------------- Beginning of Generated Code --------------------",
   "" };
 
 /* Tables of literal constants */
@@ -144,16 +99,14 @@ int asmentry(char name[], int size)
 	/*     GCC requires stack aligned to 16-byte boundary */
 	/*     Add to make space for a floating temporary just below rbp */
 	stackframesize = roundup(size + 16, 16);
-	directPrint(toparseResult);          /* canned stuff at top */
-	printf("        .file   \"%s\"\n", "foo");
-	printf("        .text\n");
-	printf(".globl %s\n", name);
-	printf("        .type   %s, @function\n", name);
-	printf("%s:\n", name);
-	directPrint(toparseResultb);
-	printf("        subq\t$%d, %%rsp \t  # make space for this stack frame\n",
-		stackframesize);
-	directPrint(toparseResultc);
+	directPrint(toparseResult);
+	printf("extern writeln\n");
+	printf("global _start:\n");
+	printf("_start:\n");
+	printf("\tpush rbp\n");
+	printf("\tmov rbp, rsp\n");
+	printf("\tsub rsp, 32\n");
+	printf("\tmov rbx, r9\n");
 	return stackframesize;
 }
 
@@ -161,15 +114,15 @@ int asmentry(char name[], int size)
 /* This is just canned code following calling conventions for target machine */
 void asmexit(char name[])
 {
-	directPrint(bottomcode);
-	printf("        .size   %s, .-%s\n", name, name);
-	outlits();                         /* Output literals */
+	printf("mov ebx, 0\n");
+	printf("mov eax, 1\n");
+	printf("int 80h;exit\n");
 }
 
 /* Make a label */
 void asmlabel(int labeln)
 {
-	printf(".L%d:\n", labeln);
+	printf("L%d:\n", labeln);
 }
 void asmlabelstr(char name[])
 {
@@ -181,13 +134,13 @@ void asmlabelstr(char name[])
 /* Example:  asmcall(code->stringval);    Call function */
 void asmcall(char name[])
 {
-	printf("\tcall\t%s              \t#  %s()\n", name, name);
+	printf("\tcall\t%s              \t;  %s()\n", name, name);
 }
 
 /* Generate a jump instruction.  Example:  asmjump(JG, 17);   */
 void asmjump(int code, int labeln)
 {
-	printf("\t%s\t.L%d \t\t\t#  jump %s\n",
+	printf("\t%s\tL%d \t\t\t;  jump %s\n",
 		jumppr[code], labeln, jumpcompr[code]);
 }
 
@@ -202,10 +155,10 @@ char* regnm(int reg, int instr)
 /* Example:  asmimmed(ADDL, 1, EAX);   Adds 1 to EAX  */
 void asmimmed(int inst, int ival, int reg)
 {
-	printf("\t%s\t$%d,%s", instpr[inst], ival, regnm(reg, inst));
-	if (inst == MOVL || inst == MOVSD || inst == MOVQ)
-		printf("         \t#  %d -> %s\n", ival, regnm(reg, inst));
-	else printf("         \t#  %s %s %d -> %s\n",
+	printf("\t%s\t%s,%d", instpr[inst], regnm(reg, inst), ival);
+	if (inst == MOV || inst == MOVSD || inst == MOVQ)
+		printf("         \t;  %d -> %s\n", ival, regnm(reg, inst));
+	else printf("         \t;  %s %s %d -> %s\n",
 		regnm(reg, inst), instcompr[inst], ival, regnm(reg, inst));
 }
 
@@ -213,22 +166,21 @@ void asmimmed(int inst, int ival, int reg)
 /* Example:  asmop(CLTQ) */
 void asmop(int inst)
 {
-	printf("\t%s\t                  \t#  %s\n", instpr[inst], instcompr[inst]);
+	printf("\t%s\t                  \t;  %s\n", instpr[inst], instcompr[inst]);
 }
 
 /* Generate a register to register instruction. */
 /* op rs,rd     ADDL  */
-/* Example:  asmrr(ADDL, ECX, EAX);  EAX + ECX -> EAX */
+/* Example:  asmrr(ADDL, ECX, EAX);  EAX + ECX -> EAX  add EAX, ECX in intel*/
 void asmrr(int inst, int srcreg, int dstreg)
 {
-	printf("\t%s\t%s,%s", instpr[inst], regnm(srcreg, inst),
-		regnm(dstreg, inst));
-	if (inst == CMPL || inst == CMPQ || inst == CMPSD)
-		printf("           \t#  compare %s - %s\n", regnm(dstreg, inst),
+	printf("\t%s\t%s,%s", instpr[inst], regnm(dstreg, inst), regnm(srcreg, inst));
+	if (inst == CMP || inst == CMPQ || inst == CMPSD)
+		printf("           \t;  compare %s - %s\n", regnm(dstreg, inst),
 			regnm(srcreg, inst));
-	else if (inst == MOVL || inst == MOVQ || inst == MOVSD)
-		printf("         \t#  %s -> %s\n", regpr[srcreg], regpr[dstreg]);
-	else printf("         \t#  %s %s %s -> %s\n",
+	else if (inst == MOV || inst == MOVQ || inst == MOVSD)
+		printf("         \t;  %s -> %s\n", regpr[srcreg], regpr[dstreg]);
+	else printf("         \t;  %s %s %s -> %s\n",
 		regpr[dstreg], instcompr[inst], regpr[srcreg], regpr[dstreg]);
 }
 
@@ -237,22 +189,22 @@ void asmrr(int inst, int srcreg, int dstreg)
 	  asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
 void asmld(int inst, int off, int reg, char str[])
 {
-	printf("\t%s\t%d(%%rbp),%s", instpr[inst], off, regnm(reg, inst));
-	printf("     \t#  %s -> %s\n", str, regnm(reg, inst));
+	printf("\t%s\t%s, [rbp%d]", instpr[inst], regnm(reg, inst), off);
+	printf("     \t;  %s -> %s\n", str, regnm(reg, inst));
 }
 
 /* Generate a store instruction relative to RBP: */
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
 void asmst(int inst, int reg, int off, char str[])
 {
-	printf("\t%s\t%s,%d(%%rbp)", instpr[inst], regnm(reg, inst), off);
-	printf("     \t#  %s -> %s\n", regnm(reg, inst), str);
+	printf("\t%s\t[rbp%d], %s ", instpr[inst], off, regnm(reg, inst));
+	printf("     \t;  %s -> %s\n", regnm(reg, inst), str);
 }
 
 void asmst2(int inst, int off)
 {
 	printf("\t%s\t%s,%d(%%rbp)", instpr[inst], dregpr[RBP], off);
-	printf("     \t#  store static link\n");
+	printf("     \t;  store static link\n");
 }
 
 /* Generate a floating store into a temporary on stack */
@@ -275,7 +227,7 @@ void asmldr(int inst, int offset, int reg, int dstreg, char str[])
 {
 	printf("\t%s\t%d(%s),%s", instpr[inst], offset, dregpr[reg],
 		regnm(dstreg, inst));
-	printf("         \t#  %s[%d+%s] -> %s\n", str, offset, dregpr[reg],
+	printf("         \t;  %s[%d+%s] -> %s\n", str, offset, dregpr[reg],
 		regnm(dstreg, inst));
 }
 
@@ -286,7 +238,7 @@ void asmldrr(int inst, int offset, int reg, int dstreg, char str[])
 {
 	printf("\t%s\t%d(%%rbp,%s),%s", instpr[inst], offset, dregpr[reg],
 		regnm(dstreg, inst));
-	printf("         \t#  %s[%d] -> %s\n", str, offset, regnm(dstreg, inst));
+	printf("         \t;  %s[%d] -> %s\n", str, offset, regnm(dstreg, inst));
 }
 
 /* Generate a load instruction using offset, RBP and
@@ -297,7 +249,7 @@ void asmldrrm(int inst, int offset, int reg, int mult, int dstreg, char str[])
 {
 	printf("\t%s\t%d(%%rbp,%s,%d),%s", instpr[inst], offset, dregpr[reg], mult,
 		regnm(dstreg, inst));
-	printf("    \t#  %s[%d+%%rbp+%s*%d] -> %s\n", str, offset, dregpr[reg], mult,
+	printf("    \t;  %s[%d+%%rbp+%s*%d] -> %s\n", str, offset, dregpr[reg], mult,
 		regnm(dstreg, inst));
 }
 
@@ -307,7 +259,7 @@ void asmstr(int inst, int srcreg, int offset, int reg, char str[])
 {
 	printf("\t%s\t%s,%d(%s)", instpr[inst], regnm(srcreg, inst), offset,
 		dregpr[reg]);
-	printf("         \t#  %s -> %s[%d+%s]\n", regnm(srcreg, inst), str, offset,
+	printf("         \t;  %s -> %s[%d+%s]\n", regnm(srcreg, inst), str, offset,
 		dregpr[reg]);
 }
 
@@ -318,7 +270,7 @@ void asmstrr(int inst, int srcreg, int offset, int reg, char str[])
 {
 	printf("\t%s\t%s,%d(%%rbp,%s)", instpr[inst], regnm(srcreg, inst), offset,
 		dregpr[reg]);
-	printf("\t#  %s -> %s[%s]\n", regnm(srcreg, inst), str,
+	printf("\t;  %s -> %s[%s]\n", regnm(srcreg, inst), str,
 		dregpr[reg]);
 }
 
@@ -330,7 +282,7 @@ void asmstrrm(int inst, int srcreg, int offset, int reg, int mult, char str[])
 {
 	printf("\t%s\t%s,%d(%%rbp,%s,%d)", instpr[inst], regnm(srcreg, inst), offset,
 		dregpr[reg], mult);
-	printf("   \t#  %s -> %s[%d+%%rbp+%s*%d]\n", regnm(srcreg, inst), str,
+	printf("   \t;  %s -> %s[%d+%%rbp+%s*%d]\n", regnm(srcreg, inst), str,
 		offset, dregpr[reg], mult);
 }
 
@@ -342,7 +294,7 @@ void asmldflit(int inst, int label, int dstreg)
 	double d = 0.0;
 	for (i = 0; i < nflit; i++)
 		if (label == flabels[i])  d = fliterals[i];
-	printf("\t%s\t.LC%d(%%rip),%s   \t#  %f -> %s\n", instpr[inst],
+	printf("\t%s\t.LC%d(%%rip),%s   \t;  %f -> %s\n", instpr[inst],
 		label, regpr[dstreg], d, regpr[dstreg]);
 }
 
@@ -350,7 +302,7 @@ void asmldflit(int inst, int label, int dstreg)
 /* Example:  asmlitarg(8, EDI);   addr of literal 8 --> %edi */
 void asmlitarg(int labeln, int dstreg)
 {
-	printf("\tmovl\t$.LC%d,%s       \t#  addr of literal .LC%d\n",
+	printf("\tmovl\t$.LC%d,%s       \t;  addr of literal .LC%d\n",
 		labeln, regpr[dstreg], labeln);
 }
 
@@ -358,7 +310,7 @@ void asmlitarg(int labeln, int dstreg)
 /* reg is integer source, freg is double float destination register. */
 void asmfloat(int reg, int freg)
 {
-	printf("\tcvtsi2sd\t%s,%s    \t#  float %s -> %s\n", regpr[reg],
+	printf("\tcvtsi2sd\t%s,%s    \t;  float %s -> %s\n", regpr[reg],
 		regpr[freg], regpr[reg], regpr[freg]);
 }
 
@@ -366,7 +318,7 @@ void asmfloat(int reg, int freg)
 /* freg is double float source, reg is integer destination register. */
 void asmfix(int freg, int reg)
 {
-	printf("\tcvttsd2si\t%s,%s    \t#  fix %s -> %s\n", regpr[freg],
+	printf("\tcvttsd2si\t%s,%s    \t;  fix %s -> %s\n", regpr[freg],
 		regpr[reg], regpr[freg], regpr[reg]);
 }
 
@@ -376,7 +328,7 @@ void asmfneg(int reg, int extrareg)
 {
 	fnegused = 1;
 	asmldflit(MOVSD, 666, extrareg);
-	printf("\txorpd\t%s,%s           \t#  negate %s\n",
+	printf("\txorpd\t%s,%s           \t;  negate %s\n",
 		regpr[extrareg], regpr[reg], regpr[reg]);
 }
 
@@ -447,46 +399,8 @@ double d;
 } /* [1] for Sun, [0] for Linux */
 
 
-/* Output literals and end material*/
-void outlits()
-{
-	int i, j, start; double d; int ida, idb;
-	directPrint(bottomcodeb);
-	if (fnegused) directPrint(fnegconst);
-	for (i = 0; i < nilit; i++)
-	{
-		printf("\t.align  4\n");
-		printf(".LC%d:\n", ilabels[i]);
-		printf("\t.long\t%d    \t#  %d\n", iliterals[i], iliterals[i]);
-	};
-	for (i = 0; i < nblit; i++)
-	{
-		printf("\t.align  4\n");
-		printf(".LC%d:\n", blabels[i]);
-		printf("\t.string\t\"%s\"\n", &bliterals[blindex[i]]);
-	};
-	for (i = 0; i < nflit; i++)
-	{
-		d = fliterals[i];
-		ida = lefth(d);
-		idb = righth(d);
-		printf("\t.align  8\n");
-		printf(".LC%d:\n", flabels[i]);
-		if (ida == 0 && idb != 0)
-		{
-			printf(";***** WARNING: following constant is probably wrong.\n");
-			printf("; See comments about Linux in genasm.c\n");
-		};
-		printf("\t.long\t%d   \t#  %f\n", idb, fliterals[i]);
-		printf("\t.long\t%d\n", ida);
-	};
-	printf("\n");
-	directPrint(bottomcodec);
-}
-
-// imull
 void asm1r(int inst, int reg)
 {
 	printf("\t%s\t%s\t\t", instpr[inst], regpr[reg]);
-	printf("\t#  %s * %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
+	printf("\t;  %s / %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
 }

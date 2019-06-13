@@ -2,6 +2,8 @@
 
 extern int blocknumber;
 extern int curLevel;
+extern int blockoffs[MAXBLOCKS];
+extern int outLevel[MAXBLOCKS];
 extern int basicsizes[5];
 
 int nextLabel;    /* Next available label number */
@@ -35,7 +37,6 @@ void genCode(TOKEN parseResult, int varsize, int maxlabel)
 
 	main = function;
 	asmlabel(0);		// label L0 (start)
-	curLevel = 1;
 	genc(main);
 	asmexit(name->stringVal);
 }
@@ -142,6 +143,18 @@ int genExp(TOKEN code)
 		if (code->whichToken == OP_FUN_CALL)
 		{
 			ret = genFunCall(code);
+		}
+		else if (code->whichToken == OP_ARRAYREF)
+		{
+			TOKEN arrayName = code->operands;
+			TOKEN arrayOffset = arrayName->next;
+			SYMBOL arraySym = searchst(arrayName->stringVal);
+			int offs = arraySym->offset + arrayOffset->intVal - stackFrameSize;
+			int index = (arrayOffset->intVal) / (basicsizes[arraySym->basicType - 1]) + arraySym->dataType->lowBound;
+			ret = getReg(arraySym->basicType);
+			char refstr[20];
+			sprintf(refstr, "%s[%d]", arrayName->stringVal, index);
+			asmld(MOV, offs, ret, refstr);
 		}
 		else
 		{
@@ -375,24 +388,35 @@ void genc(TOKEN code)
 		{
 			TOKEN leftValue = code->operands;
 			TOKEN rightValue = code->operands->next;
-			SYMBOL leftSymbol = searchst(leftValue->stringVal);
-
-			// simple var
-			if (leftSymbol != NULL)
+			int offset;		// offset of the leftValue
+			int rightReg = genExp(rightValue);       // generate rhs into a register 
+			char leftname[20];
+			if (leftValue->whichToken == OP_ARRAYREF)
 			{
-				int rightReg = genExp(rightValue);                        /* generate rhs into a register */
-				int offset = leftSymbol->offset - stackFrameSize;          /* net offset of the var   */
-				switch (code->dataType)
-				{
-				case DATA_INT:
-					asmst(MOV, rightReg, offset, leftValue->stringVal);
-					break;
-				case DATA_REAL:
-					asmst(MOVSD, rightReg, offset, leftValue->stringVal);
-					break;
-				default:
-					break;
-				}
+				TOKEN arrayName = leftValue->operands;
+				TOKEN arrayOffset = arrayName->next;
+				SYMBOL arraySym = searchst(arrayName->stringVal);
+				offset = (arraySym->offset + arrayOffset->intVal) - stackFrameSize;
+				int index = (arrayOffset->intVal) / (basicsizes[arraySym->basicType - 1]) + arraySym->dataType->lowBound;
+				sprintf(leftname, "%s[%d]", arrayName->stringVal, index);
+			}
+			else
+			{
+				SYMBOL leftSymbol = searchst(leftValue->stringVal);
+				if (leftSymbol != NULL)
+					offset = leftSymbol->offset - stackFrameSize;          /* net offset of the var   */
+				strcpy(leftname, leftValue->stringVal);
+			}			
+			switch (code->dataType)
+			{
+			case DATA_INT:
+				asmst(MOV, rightReg, offset, leftname);
+				break;
+			case DATA_REAL:
+				asmst(MOVSD, rightReg, offset, leftname);
+				break;
+			default:
+				break;
 			}
 			break;
 		}
@@ -446,7 +470,10 @@ void genc(TOKEN code)
 			SYMBOL functionSymbol = searchst(fname);
 			if (functionSymbol != NULL)
 			{
-				directPrint(funcTopCode);
+				curLevel = functionSymbol->flevel;
+				stackFrameSize = getStackSize(curLevel);		// get the frame size for this block
+				printf(funcTopCode, stackFrameSize);
+
 				SYMBOL func_ret = functionSymbol->args;		// the first arg is the return var. 
 				SYMBOL func_args = func_ret->args;		// the second arg is the argument
 				int index = 0;
@@ -493,6 +520,8 @@ void genc(TOKEN code)
 					break;
 				}
 				directPrint(funBotCode);
+				curLevel = outLevel[curLevel];
+				stackFrameSize = getStackSize(curLevel);
 			}
 			else
 			{
@@ -568,7 +597,6 @@ int genFunCall(TOKEN code)
 		fname[0] = '_';
 		strcpy(fname + 1, code->stringVal);
 		SYMBOL fsym = searchst(fname);		// function symbol
-
 		while (argList != NULL)
 		{
 			int temp = genExp(argList);		// put one arg's value in temp
@@ -645,4 +673,11 @@ void setRegUsed(int regNum)
 	{
 		printf("Error: wrong register assignment from setRegUsed!\n");
 	}
+}
+
+int getStackSize(level)
+{
+	int stacksize;
+	stacksize = roundup(blockoffs[level],16);
+	return stacksize;
 }

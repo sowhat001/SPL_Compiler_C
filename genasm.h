@@ -8,11 +8,17 @@
 
 /* Define register names */
 #define  EAX   0        /* General integer register */
+#define  RAX   0
 #define  EBX   1
+#define  RBX   1
 #define  ECX   2        /* General integer register */
+#define  RCX   2
 #define  EDX   3        /* General integer register */
+#define  RDX   3
 #define  ESI   4        /* Source Index for string */
+#define  RSI   4
 #define  EDI   5        /* Destination Index for string */
+#define  RDI   5
 #define  ESP   6        /* Stack Pointer */
 #define  RBP   7
 #define  EBP   7        /* Base Pointer */
@@ -72,8 +78,7 @@
 #define NEGQ   24
 #define ORQ    25    /* OR */
 #define NOTQ   26
-#define PUSH	27
-#define POP		28
+#define LEA    27
 
 
 /* Round up n to be a multiple of m */
@@ -102,20 +107,26 @@ void asmop(int inst);
 void asmrr(int inst, int srcreg, int dstreg);
 /* Generate a load instruction relative to RBP: */
 /* Example:  if code points to an integer variable,
-	  asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
+   asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
+void asmrr64(int inst, int srcreg, int dstreg);
+	
 void asmld(int inst, int off, int reg, char str[]);
 /* Generate a store instruction relative to RBP: */
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
+void asmld64(int inst, int off, int reg, char str[]);
+
 void asmst(int inst, int reg, int off, char str[]);
 /* Generate a floating store into a temporary on stack */
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
+void asmst64(int inst, int reg, int off, char str[]);
+
 void asmsttemp(int reg);
 /* Generate a floating from a temporary on stack */
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
 void asmldtemp(int reg);
 /* Generate a load instruction using offset and a register: */
 /* Example:  asmldr(MOVL, 4, RAX, ECX, code->stringval);  4(%rax) --> %ecx */
-void asmldr(int inst, int offset, int reg, int dstreg, char str[]);
+void asmldr(int inst, int offset, int reg, int dstreg);
 /* Generate a load instruction using offset, RBP and another register: */
 /* Example:
    asmldrr(MOVL, -8, RAX, ECX, code->stringval);  -8(%rbp,%rax) --> %ecx */
@@ -127,7 +138,7 @@ void asmldrr(int inst, int offset, int reg, int dstreg, char str[]);
 void asmldrrm(int inst, int offset, int reg, int mult, int dstreg, char str[]);
 /* Generate a store instruction relative to a register: */
 /* Example:  asmstr(MOVL, ECX, 4, RAX, code->stringval);  %ecx --> 4(%rax) */
-void asmstr(int inst, int srcreg, int offset, int reg, char str[]);
+void asmstr(int inst, int srcreg, int offset, int reg);
 /* Generate a store instruction using offset, RBP and another register: */
 /* Example:
    asmstrr(MOVL, ECX, -8, RAX, code->stringval);  -8(%rbp,%rax) --> %ecx */

@@ -638,7 +638,11 @@ void regVar(TOKEN varlist, TOKEN type, int isvar)
 		
 		sym->basicType = typesym->basicType;
 		sym->dataType = typesym;		// here may have problems
-		sym->size = typesym->size;
+		if (isvar == 1)
+			sym->size = 8;		// address 64 bits
+		else
+			sym->size = typesym->size;
+
 		// offset
 		sym->offset = blockoffs[curLevel];
 		blockoffs[curLevel] += sym->size;

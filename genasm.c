@@ -38,8 +38,8 @@ char* instpr[] =
   "and", "neg", "or", "not", "cmp", "addsd", "subsd", "mulsd",
 	/*   16       17      18      19      */
 	  "divsd", "negsd", "cmpq", "cmpsd",
-	/*   20      21       22      23      24      25     26     */
-	   "addq", "subq", "imulq", "andq", "negq", "orq", "notq"
+	/*   20      21       22      23      24      25     26     27	*/
+	   "addq", "subq", "imulq", "andq", "negq", "orq", "notq", "lea"
 };
 
 /*                    0     1      2       3        4    5    6    7  */
@@ -187,27 +187,46 @@ void asmrr(int inst, int srcreg, int dstreg)
 		regpr[dstreg], instcompr[inst], regpr[srcreg], regpr[dstreg]);
 }
 
+void asmrr64(int inst, int srcreg, int dstreg)
+{
+	printf("\t%s\t%s,%s", instpr[inst], dregpr[dstreg], dregpr[srcreg]);
+	if (inst == CMP || inst == CMPQ || inst == CMPSD)
+		printf("           \t;  compare %s - %s\n", regnm(dstreg, inst),
+			regnm(srcreg, inst));
+	else if (inst == MOV || inst == MOVQ || inst == MOVSD)
+		printf("         \t;  %s -> %s\n", dregpr[srcreg], dregpr[dstreg]);
+	else printf("         \t;  %s %s %s -> %s\n",
+		regpr[dstreg], instcompr[inst], dregpr[srcreg], dregpr[dstreg]);
+}
+
 /* Generate a load instruction relative to RBP: */
 /* Example:  if code points to an integer variable,
 	  asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
 void asmld(int inst, int off, int reg, char str[])
 {
-	printf("\t%s\t%s, [rbp%d]", instpr[inst], regnm(reg, inst), off);
-	printf("     \t;  %s -> %s\n", str, regnm(reg, inst));
+	printf("\t%s\t%s, [rbp%d]", instpr[inst], regpr[reg], off);
+	printf("     \t;  %s -> %s\n", str, regpr[reg]);
+}
+
+void asmld64(int inst, int off, int reg, char str[])
+{
+	printf("\t%s\t%s, [rbp%d]", instpr[inst], dregpr[reg], off);
+	printf("     \t;  %s -> %s\n", str, dregpr[reg]);
 }
 
 /* Generate a store instruction relative to RBP: */
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
 void asmst(int inst, int reg, int off, char str[])
 {
-	printf("\t%s\t[rbp%d], %s ", instpr[inst], off, regnm(reg, inst));
-	printf("     \t;  %s -> %s\n", regnm(reg, inst), str);
+	printf("\t%s\t[rbp%d], %s ", instpr[inst], off, regpr[reg]);
+	printf("     \t;  %s -> %s\n", regpr[reg], str);
 }
 
-void asmst2(int inst, int off)
+/* store a 64bit val relative to RBP; */
+void asmst64(int inst, int reg, int off, char str[])
 {
-	printf("\t%s\t%s,%d(%%rbp)", instpr[inst], dregpr[RBP], off);
-	printf("     \t;  store static link\n");
+	printf("\t%s\t[rbp%d], %s ", instpr[inst], off, dregpr[reg]);
+	printf("     \t;  %s -> %s\n", dregpr[reg], str);
 }
 
 /* Generate a floating store into a temporary on stack */
@@ -225,13 +244,14 @@ void asmldtemp(int reg)
 }
 
 /* Generate a load instruction using offset and a register: */
-/* Example:  asmldr(MOVL, 4, RAX, ECX, code->stringval);  4(%rax) --> %ecx */
-void asmldr(int inst, int offset, int reg, int dstreg, char str[])
+/* Example:  asmldr(MOVL, 0, RAX, ECX, code->stringval);  [rax] -> ecx  */
+void asmldr(int inst, int offset, int reg, int dstreg )
 {
-	printf("\t%s\t%d(%s),%s", instpr[inst], offset, dregpr[reg],
-		regnm(dstreg, inst));
-	printf("         \t;  %s[%d+%s] -> %s\n", str, offset, dregpr[reg],
-		regnm(dstreg, inst));
+	if (offset == 0)
+		printf("\t%s\t%s, [%s]", instpr[inst], regnm(dstreg, inst), dregpr[reg]);
+	else
+		printf("\t%s\t%s, [%s%d]", instpr[inst], regnm(dstreg, inst), dregpr[reg], offset);
+	printf("         \t;  [%d+%s] -> %s\n", offset, dregpr[reg],regnm(dstreg, inst));
 }
 
 /* Generate a load instruction using offset, RBP and another register: */
@@ -257,13 +277,14 @@ void asmldrrm(int inst, int offset, int reg, int mult, int dstreg, char str[])
 }
 
 /* Generate a store instruction relative to a register: */
-/* Example:  asmstr(MOVL, ECX, 4, RAX, code->stringval);  %ecx --> 4(%rax) */
-void asmstr(int inst, int srcreg, int offset, int reg, char str[])
+/* Example:  asmstr(MOVL, ECX, 4, RAX, code->stringval);  ecx -> [rax+4]  mov [rax+4], ecx*/
+void asmstr(int inst, int srcreg, int offset, int reg)
 {
-	printf("\t%s\t%s,%d(%s)", instpr[inst], regnm(srcreg, inst), offset,
-		dregpr[reg]);
-	printf("         \t;  %s -> %s[%d+%s]\n", regnm(srcreg, inst), str, offset,
-		dregpr[reg]);
+	if (offset == 0)
+		printf("\t%s\t[%s], %s", instpr[inst], dregpr[reg], regnm(srcreg, inst));
+	else
+		printf("\t%s\t[%s %d], %s", instpr[inst], dregpr[reg], offset, regnm(srcreg, inst));
+	printf("         \t;  %s -> [ %s + %d]\n", regnm(srcreg, inst), dregpr[reg], offset );
 }
 
 /* Generate a store instruction using offset, RBP and another register: */

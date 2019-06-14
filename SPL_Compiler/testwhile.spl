@@ -4,10 +4,14 @@ var
     s : integer;
 
 begin
+    s := 1;
+    n := 0;
 	while s <= 10 do
 	begin
 	    n := n + 1;
 	    s := s * n;
 	end;
+    writeln(s);
+    writeln(n);
 end
 .

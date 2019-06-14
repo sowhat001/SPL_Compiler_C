@@ -1,14 +1,5 @@
 ﻿  Process "parse.y" bison file
   Process "lex.l" flex file
-  codegen.c
-d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
-  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
-d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\new\new5\pl\spl\spl_compiler\codegen.c(93): warning C4244: “函数”: 从“double”转换到“float”，可能丢失数据
-d:\new\new5\pl\spl\spl_compiler\codegen.c(105): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
-d:\new\new5\pl\spl\spl_compiler\codegen.c(417): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
   lex.flex.c
 d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
   c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
@@ -115,5 +106,17 @@ parse.y(219): warning C4047: “=”:“TOKEN”与“int”的间接级别不�
 parse.y(220): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.y(222): warning C4047: “=”:“TOKEN”与“int”的间接级别不同
 parse.tab.c(2448): warning C4013: “yyerror”未定义；假设外部返回 int
+  parsef.c
+d:\new\new5\pl\spl\spl_compiler\parsef.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\parsef.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\new\new5\pl\spl\spl_compiler\utils.h(17): warning C4005: “INT_MIN”: 宏重定义
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\limits.h(34): note: 参见“INT_MIN”的前一个定义
+d:\new\new5\pl\spl\spl_compiler\parsef.c(784): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(785): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\new\new5\pl\spl\spl_compiler\parsef.c(846): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(922): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(923): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(956): warning C4133: “=”: 从“SYMBOL”到“symbtr *”的类型不兼容
+d:\new\new5\pl\spl\spl_compiler\parsef.c(987): warning C4133: “=”: 从“symbtr *”到“SYMBOL”的类型不兼容
   正在生成代码...
   SPL_Compiler.vcxproj -> D:\New\New5\PL\SPL\SPL_Compiler\Debug\SPL_Compiler.exe

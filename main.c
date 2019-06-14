@@ -42,6 +42,6 @@ int main()
 	printTree(parseResult, 0);
 	curLevel = 1;
 	genCode(parseResult, blockoffs[curLevel], labelNumber - 1);
-	//while (1);
+	while (1);
 	return 0;
 }

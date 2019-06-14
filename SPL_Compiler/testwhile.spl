@@ -5,7 +5,9 @@ var
 
 begin
 	while s <= 10 do
+	begin
 	    n := n + 1;
-	    s := s + 1 / n;
+	    s := s * n;
+	end;
 end
 .

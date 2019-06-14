@@ -105,7 +105,7 @@ Z [Zz]
 {O}{R}				{ return makeToken(TYPE_OPERATOR, OR); }
 {N}{O}{T}			{ return makeToken(TYPE_OPERATOR, NOT); }
 {D}{I}{V}			{ return makeToken(TYPE_OPERATOR, DIV); }
-{M}{O}{D}			{ return makeToken(TYPE_OPERATOR, MOD); }
+{M}{O}{D}|"%"		{ return makeToken(TYPE_OPERATOR, MOD); }
 
 {A}{R}{R}{A}{Y}				{ return makeToken(TYPE_RESERVED, ARRAY); }
 {B}{E}{G}{I}{N}				{ return makeToken(TYPE_RESERVED, BEGIN_); }

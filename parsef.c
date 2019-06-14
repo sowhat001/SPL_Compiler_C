@@ -375,11 +375,11 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 	}
 	dirCalOp->dataType = DATA_INT;
 	dirAssign = makeAssign(dirAssign, assID, dirCalOp);
+	dirAssign = link(dirAssign, gotoToken);
 
 	calID = copyToken(initAssign->operands);
 
 	dirCalOp = makeBinOp(dirCalOp, calID, constToken);
-	constToken = link(constToken, gotoToken);
 	return forToken;
 
 	/* forToken(OP_PROGN)
@@ -496,24 +496,27 @@ TOKEN makeProgram(TOKEN NameToken, TOKEN routine)
 /* repeat loop */
 TOKEN makeRepeat(TOKEN repeatToken, TOKEN stmt, TOKEN untilToken, TOKEN expression)
 {
+	TOKEN outLabelToken = createLabel();
+	TOKEN outGotoToken = createGoto(outLabelToken);
 	TOKEN labelToken = createLabel();
 	TOKEN gotoToken = createGoto(labelToken);
 	TOKEN ifToken = tokenAlloc();
 	repeatToken = makeBeginStmt(repeatToken, labelToken);
+	repeatToken = link(repeatToken, outLabelToken);
 	labelToken = link(labelToken, stmt);
 
 	ifToken->tokenType = TYPE_OPERATOR;
 	ifToken->whichToken = IF;
 	stmt = link(stmt, ifToken);
 	untilToken->whichToken = OP_PROGN;//???
-	ifToken = makeIf(ifToken, expression, untilToken, gotoToken);
+	ifToken = makeIf(ifToken, expression, outGotoToken, gotoToken);
 
 	return repeatToken;
-	/* repeatToken(OP_PROGN)
+	/* repeatToken(OP_PROGN)->outLabelToken
 
 	   labelToken->stmt->ifToken
 
-						 expression->untilToken->gotoToken
+						 expression->outGotoToken->gotoToken
 	*/
 	//     repeat
 	// 　　　　r:=a mod b;

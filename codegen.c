@@ -420,6 +420,16 @@ void genc(TOKEN code)
 			}
 			break;
 		}
+		case OP_LABEL:
+		{
+			asmlabel(code->operands->intVal);
+			break;
+		}
+		case OP_GOTO:
+		{
+			asmjump(JMP, code->operands->intVal);
+			break;
+		}
 		case IF:
 		{
 			TOKEN exp = code->operands;
@@ -427,13 +437,12 @@ void genc(TOKEN code)
 			TOKEN elseStmt = code->operands->next->next;
 			int ifLabel = genExp(exp);
 			int elseLabel;
-			int endIfLabel;
+			int endIfLabel = nextLabel++;
 			if (elseStmt)
 			{
 				elseLabel = nextLabel++;
 			}
-			endIfLabel = nextLabel++;
-
+			
 			// have else
 			if (elseStmt)
 			{

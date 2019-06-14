@@ -122,18 +122,32 @@ int genExp(TOKEN code)
 		}
 		else
 		{
-			ret = getReg(code->dataType);
-			// DATA_INT
-			if (ret < NUM_INT_REGS)
+			if (idSym->kind == SYM_ARGVAR)			// pass by reference, in function body, b means *(&b)
 			{
-				if (idSym->dataType->kind != SYM_ARRAY)
-				{
-					asmld(MOV, idSym->offset - stackFrameSize, ret, code->stringVal);
-				}
+				int temp = getReg(DATA_INT);		// 0: rax
+				char name[20];				// &b -> rax 
+				sprintf(name, "&%s", code->stringVal);
+				asmld64(MOV, idSym->offset - stackFrameSize, temp, name);
+				ret = getReg(code->dataType);		// get a free reg, e.g. ebx 
+				asmldr(MOV, 0, temp, ret);			// [rax] -> ebx;  mov ebx, [rax]
+				setRegUsed(ret);		// use ebx
+				freeReg(temp);			// free rax
 			}
 			else
 			{
-				asmld(MOVSD, idSym->offset - stackFrameSize, ret, code->stringVal);
+				ret = getReg(code->dataType);
+				// DATA_INT
+				if (ret < NUM_INT_REGS)
+				{
+					if (idSym->dataType->kind != SYM_ARRAY)
+					{
+						asmld(MOV, idSym->offset - stackFrameSize, ret, code->stringVal);
+					}
+				}
+				else
+				{
+					asmld(MOVSD, idSym->offset - stackFrameSize, ret, code->stringVal);
+				}
 			}
 		}
 		break;
@@ -305,42 +319,42 @@ int genOp(TOKEN code, int leftReg, int rightReg)
 		case EQ:
 		{
 			ret = nextLabel++;
-			asmrr(CMP, leftReg, rightReg);
+			asmrr(CMP, rightReg, leftReg);
 			asmjump(JE, ret);
 			break;
 		}
 		case NE:
 		{
 			ret = nextLabel++;
-			asmrr(CMP, leftReg, rightReg);
+			asmrr(CMP, rightReg, leftReg);
 			asmjump(JNE, ret);
 			break;
 		}
 		case LT:
 		{
 			ret = nextLabel++;
-			asmrr(CMP, leftReg, rightReg);
+			asmrr(CMP, rightReg, leftReg);
 			asmjump(JL, ret);
 			break;
 		}
 		case LE:
 		{
 			ret = nextLabel++;
-			asmrr(CMP, leftReg, rightReg);
+			asmrr(CMP, rightReg, leftReg);
 			asmjump(JLE, ret);
 			break;
 		}
 		case GT:
 		{
 			ret = nextLabel++;
-			asmrr(CMP, leftReg, rightReg);
+			asmrr(CMP, rightReg, leftReg);
 			asmjump(JG, ret);
 			break;
 		}
 		case GE:
 		{
 			ret = nextLabel++;
-			asmrr(CMP, leftReg, rightReg);
+			asmrr(CMP, rightReg, leftReg);
 			asmjump(JGE, ret);
 			break;
 		}
@@ -391,7 +405,8 @@ void genc(TOKEN code)
 			int offset;		// offset of the leftValue
 			int rightReg = genExp(rightValue);       // generate rhs into a register 
 			char leftname[20];
-			if (leftValue->whichToken == OP_ARRAYREF)
+			// the OP_ARRAYREF token doesn't have a name string, the array name is its oprands token
+			if (leftValue->whichToken == OP_ARRAYREF)		
 			{
 				TOKEN arrayName = leftValue->operands;
 				TOKEN arrayOffset = arrayName->next;
@@ -399,25 +414,49 @@ void genc(TOKEN code)
 				offset = (arraySym->offset + arrayOffset->intVal) - stackFrameSize;
 				int index = (arrayOffset->intVal) / (basicsizes[arraySym->basicType - 1]) + arraySym->dataType->lowBound;
 				sprintf(leftname, "%s[%d]", arrayName->stringVal, index);
+				switch (code->dataType)
+				{
+				case DATA_INT:
+					asmst(MOV, rightReg, offset, leftname);
+					break;
+				case DATA_REAL:
+					asmst(MOVSD, rightReg, offset, leftname);
+					break;
+				default:
+					break;
+				}
 			}
-			else
+			else		// other tokens have name string, and can search in table directly 
 			{
 				SYMBOL leftSymbol = searchst(leftValue->stringVal);
 				if (leftSymbol != NULL)
 					offset = leftSymbol->offset - stackFrameSize;          /* net offset of the var   */
-				strcpy(leftname, leftValue->stringVal);
-			}			
-			switch (code->dataType)
-			{
-			case DATA_INT:
-				asmst(MOV, rightReg, offset, leftname);
-				break;
-			case DATA_REAL:
-				asmst(MOVSD, rightReg, offset, leftname);
-				break;
-			default:
-				break;
+				if (leftSymbol->kind == SYM_ARGVAR)		// pass by reference, the address is stored in offset
+				{
+					int temp = getReg(DATA_INT);		// 0: rax
+					char name[20];				// &b -> rax 
+					sprintf(name, "&%s", leftValue->stringVal);
+					asmld64(MOV, leftSymbol->offset - stackFrameSize, temp, name);
+					asmstr(MOV, rightReg, 0, temp);
+					freeReg(temp);
+				}
+				else
+				{ 
+					strcpy(leftname, leftValue->stringVal);
+					switch (code->dataType)
+					{
+					case DATA_INT:
+						asmst(MOV, rightReg, offset, leftname);
+						break;
+					case DATA_REAL:
+						asmst(MOVSD, rightReg, offset, leftname);
+						break;
+					default:
+						break;
+					}
+				}			
 			}
+			freeReg(rightReg);
 			break;
 		}
 		case OP_LABEL:
@@ -488,26 +527,36 @@ void genc(TOKEN code)
 				int index = 0;
 				while (func_args)
 				{
-					switch (func_args->basicType)
-					{
-					case DATA_INT:
+					if (func_args->kind == SYM_ARGVAR)		// call by reference, argument is address
 					{
 						int argReg = argRegs[index++];
 						setRegUsed(argReg);
 						int offset = func_args->offset - stackFrameSize;
-						asmst(MOV, argReg, offset, func_args->nameString);
+						asmst64(MOV, argReg, offset, func_args->nameString);
 					}
-					break;
-					case DATA_REAL:
+					else		// by value
 					{
-						int argReg = argRegs[index++];
-						setRegUsed(argReg);
-						int offset = func_args->offset - stackFrameSize;
-						asmst(MOVSD, argReg, offset, func_args->nameString);
-					}
-					break;
-					default:
+						switch (func_args->basicType)
+						{
+						case DATA_INT:
+						{
+							int argReg = argRegs[index++];
+							setRegUsed(argReg);
+							int offset = func_args->offset - stackFrameSize;
+							asmst(MOV, argReg, offset, func_args->nameString);
+						}
 						break;
+						case DATA_REAL:
+						{
+							int argReg = argRegs[index++];
+							setRegUsed(argReg);
+							int offset = func_args->offset - stackFrameSize;
+							asmst(MOVSD, argReg, offset, func_args->nameString);
+						}
+						break;
+						default:
+							break;
+						}
 					}
 					func_args = func_args->args;
 				}
@@ -606,16 +655,36 @@ int genFunCall(TOKEN code)
 		fname[0] = '_';
 		strcpy(fname + 1, code->stringVal);
 		SYMBOL fsym = searchst(fname);		// function symbol
+		SYMBOL fargsym = fsym->args->args;
+		SYMBOL asym;
 		while (argList != NULL)
 		{
-			int temp = genExp(argList);		// put one arg's value in temp
-			if (temp != argRegs[count])
+			asym = searchst(argList->stringVal);
+			if (fargsym->kind == SYM_ARGVAR)			// pass by reference, in function body, b means *(&b)
 			{
-				asmrr(MOV, temp, argRegs[count]); // score values into arg reg
-				setRegUsed(argRegs[count++]);
-				freeReg(temp);
+				int temp = getReg(DATA_INT);		// 0: rax
+				char name[20];				// &b -> rax 
+				sprintf(name, "&%s", code->stringVal);
+				asmld64(LEA, asym->offset - stackFrameSize, temp, name);		// lea rax, [rbp-offs]
+				if (temp != argRegs[count])			
+				{
+					asmrr64(MOV, temp, argRegs[count]);		// mov rdi, rax
+					setRegUsed(argRegs[count++]);
+					freeReg(temp);
+				}
+			}
+			else
+			{
+				int temp = genExp(argList);		// put one arg's value in temp
+				if (temp != argRegs[count])
+				{
+					asmrr(MOV, temp, argRegs[count]); // score values into arg reg
+					setRegUsed(argRegs[count++]);
+					freeReg(temp);
+				}
 			}
 			argList = argList->next;
+			fargsym = fargsym->args;
 		}
 		asmcall(code->stringVal);
 		setRegUsed(EAX);		// return is EAX

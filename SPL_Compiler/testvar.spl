@@ -1,0 +1,16 @@
+program hello;
+var 
+    m : integer;
+function go(var b : integer): integer;
+begin
+    b := b + 1;
+    go := 1;
+end
+;
+
+begin
+    m := 2;
+    go(m);
+    writeln(m);
+end
+.

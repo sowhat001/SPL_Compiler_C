@@ -15,15 +15,14 @@
 
 const int argRegs[NUM_argRegsS] = { EDI, ESI, EDX, ECX };
 
-char* funcTopCode[] =
+char funcTopCode[] =
 {
-  "	push	rbp				; save base pointer on stack",
-  "	mov	rbp, rsp		; move stack pointer to base pointer",
-  "	sub	rsp, 32			; make space for this stack frame",
-  "	push	rbx			; make space for this stack frame",
-  "	push	rcx			; make space for this stack frame",
-  "	push	rdx			; make space for this stack frame",
-  "",
+  "\tpush	rbp				; save base pointer on stack\n"
+  "\tmov	rbp, rsp		; move stack pointer to base pointer\n"
+  "\tsub	rsp, %d			; make space for this stack frame\n"
+  "\tpush	rbx			; make space for this stack frame\n"
+  "\tpush	rcx			; make space for this stack frame\n"
+  "\tpush	rdx			; make space for this stack frame\n"
 };
 char* funBotCode[] =
 {

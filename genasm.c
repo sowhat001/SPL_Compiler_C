@@ -88,7 +88,11 @@ void directPrint(char* lines[])
 /* Round up n to be a multiple of m */
 int roundup(int n, int m)
 {
-	return ((n + m - 1) / m) * m;
+	int ans;
+	ans = n + m - 1;
+	ans = ans / m;
+	ans = ans * m;
+	return ans;
 }
 
 /* Make entry code for a program. */
@@ -97,15 +101,14 @@ int roundup(int n, int m)
 int asmentry(char name[], int size)
 {
 	/*     GCC requires stack aligned to 16-byte boundary */
-	/*     Add to make space for a floating temporary just below rbp */
-	stackframesize = roundup(size + 16, 16);
+	stackframesize = roundup(size, 16);
 	directPrint(toparseResult);
 	printf("extern writeln\n");
 	printf("global _start:\n");
 	printf("_start:\n");
 	printf("\tpush rbp\n");
 	printf("\tmov rbp, rsp\n");
-	printf("\tsub rsp, 32\n");
+	printf("\tsub rsp, %d\n", stackframesize);
 	printf("\tmov rbx, r9\n");
 	return stackframesize;
 }

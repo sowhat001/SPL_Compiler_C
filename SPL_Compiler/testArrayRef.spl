@@ -8,7 +8,7 @@ var
 
 begin
     x := 5;
-    writeln(x);
-    y[5] := 3;
+    y[5] := x;
+    writeln(y[5]);
 end
 .

@@ -20,14 +20,26 @@ int yylex(void);
 
 int main()
 {
-	printf(";BEGIN\n");
 	initPrint();
-	initsyms();
-	yyparse();
-	//printst();
-	//printTree(parseResult, 0);
-	curLevel = 1;
-	genCode(parseResult, blockoffs[curLevel], labelNumber - 1);
+	int done = 0;
+	int res = 0;
+	while (done == 0)
+	{
+		res = yylex();    /* yylex is the entry point to the lex program */
+		if (res != 0)
+		{
+			printf("yylex() = %4d   ", res);
+			printTokenDetail(yylval);
+			printf("\n");
+		}
+		else done = 1;
+	}
+	//initsyms();
+	//yyparse();
+	////printst();
+	////printTree(parseResult, 0);
+	//curLevel = 1;
+	//genCode(parseResult, blockoffs[curLevel], labelNumber - 1);
 	while (1);
 	return 0;
 }

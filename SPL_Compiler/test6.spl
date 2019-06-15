@@ -1,6 +1,7 @@
 program hello;
 var 
 	ans : integer;
+	ans : real;
 
 function gcd(a, b : integer) : integer;
 begin

@@ -12,5 +12,8 @@ begin
         a := b;
         b := r;
     until r = 0;
+    writeln(a);
+    writeln(b);
+    writeln(r);
 end
 .

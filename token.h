@@ -4,7 +4,7 @@
 /* token data structure */
 typedef struct _token
 {
-	int tokenType;
+	int tokenType; 
 	int whichToken;
 	int dataType;
 	struct symtbr *symType;

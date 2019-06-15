@@ -502,7 +502,7 @@ TOKEN makeRepeat(TOKEN repeatToken, TOKEN stmt, TOKEN untilToken, TOKEN expressi
 	ifToken->tokenType = TYPE_OPERATOR;
 	ifToken->whichToken = IF;
 	stmt = link(stmt, ifToken);
-	untilToken->whichToken = OP_PROGN;  //???
+	untilToken->whichToken = OP_PROGN;
 	ifToken = makeIf(ifToken, expression, outGotoToken, gotoToken);
 
 	return repeatToken;
@@ -985,7 +985,7 @@ TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 		if (strcmp(field->stringVal, s->nameString) == 0)
 		{
 			offsetToken = createConst(offset);
-			dotToken->dataType = s->basicType;		// token->dataType is an int. what about complicated type?
+			dotToken->dataType = s->basicType;		// token->dataType is an int
 			break;
 		}
 		else

@@ -22,6 +22,15 @@
 #define  ESP   6        /* Stack Pointer */
 #define  RBP   7
 #define  EBP   7        /* Base Pointer */
+#define  R8	   8
+#define  R9	   9
+#define  R10   10
+#define  R11   11
+#define  R12   12
+#define  R13   13
+#define  R14   14
+#define  R15   15
+
 #define  XMM0  16       /* Float register: function result */
 
 #define MINIMMEDIATE -2147483648   /* Minimum value of immediate constant */
@@ -189,5 +198,7 @@ void directPrint(char* lines[]);
 void asmlabelstr(char name[]);
 // imull
 void asm1r(int inst, int reg);
-void asmst2(int inst, int off);
+
+void asmpush(int reg);
+void asmpop(int reg);
 #endif

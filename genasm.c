@@ -204,13 +204,19 @@ void asmrr64(int inst, int srcreg, int dstreg)
 	  asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
 void asmld(int inst, int off, int reg, char str[])
 {
-	printf("\t%s\t%s, [rbp%d]", instpr[inst], regpr[reg], off);
+	if (off == 0)
+		printf("\t%s\t%s, [rbp]", instpr[inst], regpr[reg]);
+	else
+		printf("\t%s\t%s, [rbp%d]", instpr[inst], regpr[reg], off);
 	printf("     \t;  %s -> %s\n", str, regpr[reg]);
 }
 
 void asmld64(int inst, int off, int reg, char str[])
 {
-	printf("\t%s\t%s, [rbp%d]", instpr[inst], dregpr[reg], off);
+	if (off == 0)
+		printf("\t%s\t%s, [rbp]", instpr[inst], dregpr[reg]);
+	else
+		printf("\t%s\t%s, [rbp%d]", instpr[inst], dregpr[reg], off);
 	printf("     \t;  %s -> %s\n", str, dregpr[reg]);
 }
 
@@ -427,4 +433,16 @@ void asm1r(int inst, int reg)
 {
 	printf("\t%s\t%s\t\t", instpr[inst], regpr[reg]);
 	printf("\t;  %s / %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
+}
+
+void asmpush(int reg)
+{
+	printf("\tpush\t%s\t\t", dregpr[reg]);
+	printf("\t;  push  %s\n", dregpr[reg]);
+}
+
+void asmpop(int reg)
+{
+	printf("\tpop\t%s\t\t", dregpr[reg]);
+	printf("\t;  pop  %s\n", dregpr[reg]);
 }

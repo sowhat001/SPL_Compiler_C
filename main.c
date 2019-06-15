@@ -20,26 +20,12 @@ int yylex(void);
 
 int main()
 {
-	printf("BEGIN\n");
+	printf(";BEGIN\n");
 	initPrint();
-	//int temp = 0;
-	//while (1)
-	//{
-	//	temp = yylex();
-	//	if (temp != 0)
-	//	{
-	//		printf("yylex() = %4d   ", temp);
-	//		printTokenDetail(yylval);
-	//		printf("\n");
-	//	}
-	//	else
-	//		break;
-	//}
-
 	initsyms();
 	yyparse();
-	printst();
-	printTree(parseResult, 0);
+	//printst();
+	//printTree(parseResult, 0);
 	curLevel = 1;
 	genCode(parseResult, blockoffs[curLevel], labelNumber - 1);
 	while (1);

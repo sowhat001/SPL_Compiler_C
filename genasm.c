@@ -56,22 +56,7 @@ char* toparseResult[] = {
 
 /* Tables of literal constants */
 
-static int   iliterals[100];  /* integer literals */
-static int   ilabels[100];
-static float fliterals[100];  /* floating literals */
-static int   flabels[100];
-static char  bliterals[1000]; /* byte literals */
-static int   blindex[100];    /* index to byte literals */
-static int   blabels[100];
-static int   nilit = 0;
-static int   nflit = 0;
-static int   nblit = 0;
-static int   floatconst = 0;  /* literal constant needed for floating */
-
-static int   fnegused = 0;    /* constant for floating negation is used */
-
 static int   stackframesize;  /* size of stack frame variables */
-
 
 /* Print a section of canned code.  Quits on an empty string.  */
 void directPrint(char* lines[])
@@ -103,18 +88,19 @@ int asmentry(char name[], int size)
 	/*     GCC requires stack aligned to 16-byte boundary */
 	stackframesize = roundup(size, 16);
 	directPrint(toparseResult);
-	printf("extern writeln\n");
+	printf("extern writeln\n");			/* writeln realised by C */
 	printf("global _start:\n");
 	printf("_start:\n");
-	printf("\tpush rbp\n");
+	printf("\tpush rbp\n");			/* create stack */
 	printf("\tmov rbp, rsp\n");
 	printf("\tsub rsp, %d\n", stackframesize);
 	printf("\tmov rbx, r9\n");
 	return stackframesize;
 }
 
-/* Make exit code for a program. */
-/* This is just canned code following calling conventions for target machine */
+/* Make exit code for a program. 
+ * call system call: exit 
+ */
 void asmexit(char name[])
 {
 	printf("mov ebx, 0\n");
@@ -147,41 +133,27 @@ void asmjump(int code, int labeln)
 		jumppr[code], labeln, jumpcompr[code]);
 }
 
-/* Get the right register name depending on instruction */
-char* regnm(int reg, int instr)
-{
-	return (instr == MOVQ || instr == CMPQ) ? dregpr[reg] : regpr[reg];
-}
-
 /* Generate an immediate instruction: move an int to a register   */
 /* Example:  asmimmed(MOVL, 3, EAX);   Moves 3 to EAX  */
 /* Example:  asmimmed(ADDL, 1, EAX);   Adds 1 to EAX  */
 void asmimmed(int inst, int ival, int reg)
 {
-	printf("\t%s\t%s,%d", instpr[inst], regnm(reg, inst), ival);
-	if (inst == MOV || inst == MOVSD || inst == MOVQ)
-		printf("         \t;  %d -> %s\n", ival, regnm(reg, inst));
-	else printf("         \t;  %s %s %d -> %s\n",
-		regnm(reg, inst), instcompr[inst], ival, regnm(reg, inst));
+	printf("\t%s\t%s,%d", instpr[inst], regpr[reg], ival);
+	if (inst == MOV)
+		printf("         \t;  %d -> %s\n", ival, regpr[reg]);
+	else printf("         \t;  %s %s %d -> %s\n", regpr[reg], instcompr[inst], ival, regpr[reg]);
 }
 
-/* Generate an instruction with just the op. */
-/* Example:  asmop(CLTQ) */
-void asmop(int inst)
-{
-	printf("\t%s\t                  \t;  %s\n", instpr[inst], instcompr[inst]);
-}
-
-/* Generate a register to register instruction. */
-/* op rs,rd     ADDL  */
-/* Example:  asmrr(ADDL, ECX, EAX);  EAX + ECX -> EAX  add EAX, ECX in intel*/
+/* Generate a register to register instruction. 
+ * op rs,rd     ADD  
+ * Example:  asmrr(ADD, ECX, EAX);  EAX + ECX -> EAX  add EAX, ECX in intel
+ */
 void asmrr(int inst, int srcreg, int dstreg)
 {
-	printf("\t%s\t%s,%s", instpr[inst], regnm(dstreg, inst), regnm(srcreg, inst));
-	if (inst == CMP || inst == CMPQ || inst == CMPSD)
-		printf("           \t;  compare %s - %s\n", regnm(dstreg, inst),
-			regnm(srcreg, inst));
-	else if (inst == MOV || inst == MOVQ || inst == MOVSD)
+	printf("\t%s\t%s,%s", instpr[inst], regpr[dstreg], regpr[srcreg]);
+	if (inst == CMP)
+		printf("           \t;  compare %s - %s\n", regpr[srcreg], regpr[dstreg]);
+	else if (inst == MOV)
 		printf("         \t;  %s -> %s\n", regpr[srcreg], regpr[dstreg]);
 	else printf("         \t;  %s %s %s -> %s\n",
 		regpr[dstreg], instcompr[inst], regpr[srcreg], regpr[dstreg]);
@@ -190,18 +162,18 @@ void asmrr(int inst, int srcreg, int dstreg)
 void asmrr64(int inst, int srcreg, int dstreg)
 {
 	printf("\t%s\t%s,%s", instpr[inst], dregpr[dstreg], dregpr[srcreg]);
-	if (inst == CMP || inst == CMPQ || inst == CMPSD)
-		printf("           \t;  compare %s - %s\n", regnm(dstreg, inst),
-			regnm(srcreg, inst));
-	else if (inst == MOV || inst == MOVQ || inst == MOVSD)
+	if (inst == CMP)
+		printf("           \t;  compare %s - %s\n", dregpr[dstreg], dregpr[srcreg]);
+	else if (inst == MOV)
 		printf("         \t;  %s -> %s\n", dregpr[srcreg], dregpr[dstreg]);
 	else printf("         \t;  %s %s %s -> %s\n",
-		regpr[dstreg], instcompr[inst], dregpr[srcreg], dregpr[dstreg]);
+		dregpr[dstreg], instcompr[inst], dregpr[srcreg], dregpr[dstreg]);
 }
 
-/* Generate a load instruction relative to RBP: */
-/* Example:  if code points to an integer variable,
-	  asmld(MOVL, -code->symentry->offset, 0, code->stringval);   */
+/* Generate a load instruction relative to RBP: 
+ * Example:  if code points to an integer variable,
+ *	  asmld(MOV, -code->symentry->offset, 0, code->stringval);   
+ */
 void asmld(int inst, int off, int reg, char str[])
 {
 	if (off == 0)
@@ -220,8 +192,9 @@ void asmld64(int inst, int off, int reg, char str[])
 	printf("     \t;  %s -> %s\n", str, dregpr[reg]);
 }
 
-/* Generate a store instruction relative to RBP: */
-/* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
+/* Generate a store instruction relative to RBP: 
+ * Example:  asmst(MOV, EAX, -code->symentry->offset, code->stringval);  
+ */
 void asmst(int inst, int reg, int off, char str[])
 {
 	printf("\t%s\t[rbp%d], %s ", instpr[inst], off, regpr[reg]);
@@ -235,51 +208,15 @@ void asmst64(int inst, int reg, int off, char str[])
 	printf("     \t;  %s -> %s\n", dregpr[reg], str);
 }
 
-/* Generate a floating store into a temporary on stack */
-/* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
-void asmsttemp(int reg)
-{
-	asmst(MOVSD, reg, -8, "temp");
-}
-
-/* Generate a floating from a temporary on stack */
-/* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
-void asmldtemp(int reg)
-{
-	asmld(MOVSD, -8, reg, "temp");
-}
-
 /* Generate a load instruction using offset and a register: */
-/* Example:  asmldr(MOVL, 0, RAX, ECX, code->stringval);  [rax] -> ecx  */
+/* Example:  asmldr(MOV, 0, RAX, ECX, code->stringval);  [rax] -> ecx  */
 void asmldr(int inst, int offset, int reg, int dstreg )
 {
 	if (offset == 0)
-		printf("\t%s\t%s, [%s]", instpr[inst], regnm(dstreg, inst), dregpr[reg]);
+		printf("\t%s\t%s, [%s]", instpr[inst], dregpr[dstreg], dregpr[reg]);
 	else
-		printf("\t%s\t%s, [%s%d]", instpr[inst], regnm(dstreg, inst), dregpr[reg], offset);
-	printf("         \t;  [%d+%s] -> %s\n", offset, dregpr[reg],regnm(dstreg, inst));
-}
-
-/* Generate a load instruction using offset, RBP and another register: */
-/* Example:
-   asmldrr(MOVL, -8, RAX, ECX, code->stringval);  -8(%rbp,%rax) --> %ecx */
-void asmldrr(int inst, int offset, int reg, int dstreg, char str[])
-{
-	printf("\t%s\t%d(%%rbp,%s),%s", instpr[inst], offset, dregpr[reg],
-		regnm(dstreg, inst));
-	printf("         \t;  %s[%d] -> %s\n", str, offset, regnm(dstreg, inst));
-}
-
-/* Generate a load instruction using offset, RBP and
-   another register with multiplier (2, 4 or 8): */
-   /* Example:
-	  asmldrrm(MOVL, -8, RAX, 4, ECX, code->stringval); -8(%rbp,%rax,4) --> %ecx */
-void asmldrrm(int inst, int offset, int reg, int mult, int dstreg, char str[])
-{
-	printf("\t%s\t%d(%%rbp,%s,%d),%s", instpr[inst], offset, dregpr[reg], mult,
-		regnm(dstreg, inst));
-	printf("    \t;  %s[%d+%%rbp+%s*%d] -> %s\n", str, offset, dregpr[reg], mult,
-		regnm(dstreg, inst));
+		printf("\t%s\t%s, [%s%d]", instpr[inst], dregpr[dstreg], dregpr[reg], offset);
+	printf("         \t;  [%d+%s] -> %s\n", offset, dregpr[reg], dregpr[dstreg]);
 }
 
 /* Generate a store instruction relative to a register: */
@@ -287,160 +224,31 @@ void asmldrrm(int inst, int offset, int reg, int mult, int dstreg, char str[])
 void asmstr(int inst, int srcreg, int offset, int reg)
 {
 	if (offset == 0)
-		printf("\t%s\t[%s], %s", instpr[inst], dregpr[reg], regnm(srcreg, inst));
+		printf("\t%s\t[%s], %s", instpr[inst], dregpr[reg], regpr[srcreg]);
 	else
-		printf("\t%s\t[%s %d], %s", instpr[inst], dregpr[reg], offset, regnm(srcreg, inst));
-	printf("         \t;  %s -> [ %s + %d]\n", regnm(srcreg, inst), dregpr[reg], offset );
+		printf("\t%s\t[%s %d], %s", instpr[inst], dregpr[reg], offset, regpr[srcreg]);
+	printf("         \t;  %s -> [ %s + %d]\n", dregpr[srcreg], dregpr[reg], offset );
 }
 
-/* Generate a store instruction using offset, RBP and another register: */
-/* Example:
-   asmstrr(MOVL, ECX, -8, RAX, code->stringval);  %ecx --> -8(%rbp,%rax) */
-void asmstrr(int inst, int srcreg, int offset, int reg, char str[])
-{
-	printf("\t%s\t%s,%d(%%rbp,%s)", instpr[inst], regnm(srcreg, inst), offset,
-		dregpr[reg]);
-	printf("\t;  %s -> %s[%s]\n", regnm(srcreg, inst), str,
-		dregpr[reg]);
-}
-
-/* Generate a store instruction using offset, RBP and
-   another register with multiplier (2, 4 or 8): */
-   /* Example:
-	  asmstrrm(MOVL, ECX, -8, RAX, 4, code->stringval); %ecx --> -8(%rbp,%rax,4) */
-void asmstrrm(int inst, int srcreg, int offset, int reg, int mult, char str[])
-{
-	printf("\t%s\t%s,%d(%%rbp,%s,%d)", instpr[inst], regnm(srcreg, inst), offset,
-		dregpr[reg], mult);
-	printf("   \t;  %s -> %s[%d+%%rbp+%s*%d]\n", regnm(srcreg, inst), str,
-		offset, dregpr[reg], mult);
-}
-
-/* Load float literal into specified register */
-/* Example:  asmldflit(MOVSD, 7, XMM0);  literal with label .LC7 --> XMM0 */
-void asmldflit(int inst, int label, int dstreg)
-{
-	int i;
-	double d = 0.0;
-	for (i = 0; i < nflit; i++)
-		if (label == flabels[i])  d = fliterals[i];
-	printf("\t%s\t.LC%d(%%rip),%s   \t;  %f -> %s\n", instpr[inst],
-		label, regpr[dstreg], d, regpr[dstreg]);
-}
-
-/* Set up a literal address argument for subroutine call */
-/* Example:  asmlitarg(8, EDI);   addr of literal 8 --> %edi */
-void asmlitarg(int labeln, int dstreg)
-{
-	printf("\tmovl\t$.LC%d,%s       \t;  addr of literal .LC%d\n",
-		labeln, regpr[dstreg], labeln);
-}
-
-/* Generate instructions to float data from an integer register to F reg. */
-/* reg is integer source, freg is double float destination register. */
-void asmfloat(int reg, int freg)
-{
-	printf("\tcvtsi2sd\t%s,%s    \t;  float %s -> %s\n", regpr[reg],
-		regpr[freg], regpr[reg], regpr[freg]);
-}
-
-/* Generate instruction to fix data from float register freg to int reg. */
-/* freg is double float source, reg is integer destination register. */
-void asmfix(int freg, int reg)
-{
-	printf("\tcvttsd2si\t%s,%s    \t;  fix %s -> %s\n", regpr[freg],
-		regpr[reg], regpr[freg], regpr[reg]);
-}
-
-/* Generate instructions to negate a float reg. */
-/* reg is value to be negated, extrareg is another float register. */
-void asmfneg(int reg, int extrareg)
-{
-	fnegused = 1;
-	asmldflit(MOVSD, 666, extrareg);
-	printf("\txorpd\t%s,%s           \t;  negate %s\n",
-		regpr[extrareg], regpr[reg], regpr[reg]);
-}
-
-/* Make a literal for integer n with label number labeln */
-void makeilit(int n, int labeln)
-{
-	iliterals[nilit] = n;
-	ilabels[nilit] = labeln;
-	nilit++;
-}
-
-/* Make a literal for float f with label number labeln */
-void makeflit(float f, int labeln)
-{
-	fliterals[nflit] = f;
-	flabels[nflit] = labeln;
-	nflit++;
-}
-
-/* Make a byte literal for string s with label number labeln */
-void makeblit(char s[], int labeln)
-{
-	int indx, i, done;
-	if (nblit == 0)
-	{
-		indx = 0;
-		blindex[0] = 0;
-	}
-	else indx = blindex[nblit];
-	i = 0;
-	done = 0;
-	while (i < 16 && done == 0)
-	{
-		bliterals[indx++] = s[i];
-		if (s[i] == '\0') done = 1;
-		i++;
-	};
-	blabels[nblit] = labeln;
-	nblit++;
-	blindex[nblit] = indx;
-}
-
-typedef struct dtoi
-{
-	union
-	{
-		double dbl; int iarr[2];
-	} val;
-} Dtoi;
-
-Dtoi dtoitmp;
-
-/* Get half words of a double float */
-/* Note: the [0] and [1] below are correct for Linux;
-	 you may need to switch for other machine or OS. */
-int lefth(d)
-double d;
-{
-	dtoitmp.val.dbl = d;
-	return (dtoitmp.val.iarr[1]);
-} /* [0] for Sun, [1] for Linux */
-
-int righth(d)
-double d;
-{
-	dtoitmp.val.dbl = d;
-	return (dtoitmp.val.iarr[0]);
-} /* [1] for Sun, [0] for Linux */
-
-
+/* instruction with one reg, e.g. mul, div 
+ */
 void asm1r(int inst, int reg)
 {
 	printf("\t%s\t%s\t\t", instpr[inst], regpr[reg]);
-	printf("\t;  %s / %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
+	if (inst == _DIV)
+		printf("\t;  %s / %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
+	else
+		printf("\t;  %s * %s -> %s\n", regpr[EAX], regpr[reg], regpr[EAX]);
 }
 
+/* push a reg into stack */
 void asmpush(int reg)
 {
 	printf("\tpush\t%s\t\t", dregpr[reg]);
 	printf("\t;  push  %s\n", dregpr[reg]);
 }
 
+/* pop value from stack into a reg */
 void asmpop(int reg)
 {
 	printf("\tpop\t%s\t\t", dregpr[reg]);

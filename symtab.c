@@ -1,10 +1,5 @@
 #include "symtab.h"
 
-#pragma warning(disable:4996)
-
- // TOKENNODE user_labels = NULL;
- // TOKENNODE curr_label = NULL;
-
  /* BASEOFFSET is the offset for the first variable */
 #define BASEOFFSET 0
 
@@ -75,7 +70,7 @@ SYMBOL insertsymat(char name[], int kind, int level)
 int hash_f(char name[])
 {
 	int ans = 0;
-	// hi = alpha * hi-1 + ci 
+	/* hi = alpha * hi-1 + ci */
 	for (unsigned int i = 0; i < strlen(name); i++)
 	{
 		ans = (ans << HASH_SHIFT) + (name[i] - '0');
@@ -84,16 +79,16 @@ int hash_f(char name[])
 	return ans;
 }
 
-// 05.26 new copy and insert function:
+/* copy and insert function a symbol into symbol table  */
 SYMBOL copyAndInsert(char name[], SYMBOL source)
 {
 	SYMBOL newsym;
-	newsym = insertsym(name, source->kind);		// only nest level may be different, set in this call 
+	newsym = insertsym(name, source->kind);		/* only nest level may be different, set in this call */
 	newsym->basicType = source->basicType;
 	newsym->dataType = source->dataType;
 	newsym->size = source->size;
 	newsym->offset = source->offset;
-	newsym->constval = source->constval;		// can union directly assign? 
+	newsym->constval = source->constval;
 	newsym->args = source->args;
 	newsym->members = source->members;
 	newsym->lowBound = source->lowBound;
@@ -102,8 +97,9 @@ SYMBOL copyAndInsert(char name[], SYMBOL source)
 	return newsym;
 }
 
-/* Search one level of the symbol table for the given name.         */
-/* Result is a pointer to the symbol table entry or NULL            */
+/* Search one level of the symbol table for the given name.    
+ * Result is a pointer to the symbol table entry or NULL  
+ */
 SYMBOL searchlev(char name[], int level)
 {
 	int pos = hash_f(name);
@@ -112,7 +108,7 @@ SYMBOL searchlev(char name[], int level)
 
 	while (sym != NULL)
 	{
-		// only the same level needs to be checked 
+		/* only the same level needs to be checked */
 		if (sym->nestLevel == level)
 		{
 			if (strcmp(name, sym->nameString) == 0)
@@ -123,13 +119,12 @@ SYMBOL searchlev(char name[], int level)
 	return sym;		/* pointer to the symbol struct or NULL */
 }
 
-/* Search all levels of the symbol table for the given name.        */
-/* Result is a pointer to the symbol table entry or NULL            */
+/* Search all levels of the symbol table for the given name.
+ * Result is a pointer to the symbol table entry or NULL            */
 SYMBOL searchst(char name[])
 {
 	SYMBOL sym = NULL;
 	int level = curLevel;
-	// problem 
 	while (sym == NULL && level >= 0)
 	{
 		sym = searchlev(name, level);
@@ -137,7 +132,6 @@ SYMBOL searchst(char name[])
 			level = outLevel[level]; 	/* try outer level */
 		else level = -1;                      /* until all are tried  */
 	}
-	// printf("searchst %8s %ld at level %d\n",name, (long)sym, level);
 	return sym;
 }
 
@@ -160,7 +154,7 @@ int alignsize(SYMBOL sym)
 		return 16;
 		break;
 	default:
-		return 8; 	// ????
+		return 8; 
 		break;
 	}
 	return asize;
@@ -185,7 +179,7 @@ SYMBOL insertfn(char name[], SYMBOL resulttp, SYMBOL argtp)
 	strcpy(fname + 1, name);
 	fsym = insertsym(fname, SYM_FUNCTION);
 
-	arg = insertsym(name, SYM_ARGLIST);	// argument 
+	arg = insertsym(name, SYM_ARGLIST);	/* argument */
 	if (argtp != NULL)
 	{
 		arg->basicType = argtp->basicType;
@@ -194,7 +188,8 @@ SYMBOL insertfn(char name[], SYMBOL resulttp, SYMBOL argtp)
 		else
 			arg->dataType = argtp->dataType;
 	}
-	fsym->args = arg;
+	fsym->args = arg;		/* to suit with return value */
+	arg->args = arg;
 
 	if (resulttp != NULL)
 	{
@@ -207,21 +202,22 @@ SYMBOL insertfn(char name[], SYMBOL resulttp, SYMBOL argtp)
 	return fsym;
 }
 
-// insert function with argument list
-// result variable has the same name with the function 
+/* insert function with argument list
+ * result variable has the same name with the function  
+ */
 SYMBOL insertfnx(char name[], SYMBOL resulttp, SYMBOL arglist)
 {
 	SYMBOL fsym, res;
 	int funcLevel;
 	char funcname[16];
-	funcname[0] = '_';		// name in the function's symbol table is '_name' to differ from the return variable
+	funcname[0] = '_';		/* name in the function's symbol table is '_name' to differ from the return variable */
 	strcpy(funcname + 1, name);
 	funcLevel = curLevel;
-	downLevel();		// func name needs to be placed in the definition's level 
+	downLevel();		/* func name needs to be placed in the definition's level */
 	fsym = insertsym(funcname, SYM_FUNCTION);
-	curLevel = funcLevel;		// recover the level
-	fsym->flevel = curLevel;	// remeber the func level
-	if (resulttp != NULL)		// function
+	curLevel = funcLevel;		/* recover the level */
+	fsym->flevel = curLevel;	/* remeber the func level */
+	if (resulttp != NULL)		/* function */
 	{
 		res = insertsym(name, SYM_VAR);
 		if (resulttp != NULL)
@@ -234,14 +230,12 @@ SYMBOL insertfnx(char name[], SYMBOL resulttp, SYMBOL arglist)
 			res->offset = blockoffs[curLevel];
 			blockoffs[curLevel] += res->size;
 		}
-		// link the result and arglist to fsym->args
+		/* link the result and arglist to fsym->args */
 		fsym->args = res;
 		res->args = arglist;
 	}
 	else
-	{
 		fsym->args = arglist;
-	}
 	return fsym;
 }
 
@@ -266,7 +260,7 @@ void initsyms()
 	insertfn("odd", boolsym, intsym);
 
 	insertfn("write", NULL, charsym);
-	insertfn("writeln", NULL, charsym);
+	insertfn("writeln", NULL, intsym);
 	insertfn("read", NULL, NULL);
 	insertfn("readln", NULL, NULL);
 
@@ -275,68 +269,8 @@ void initsyms()
 	outLevel[1] = 0;
 }
 
-// Following: Not know what for: 
-// int user_label_exists(TOKEN label_tok) {
-// 	if (label_tok->intVal < 0) {
-// 		printf("Warning: searching for user label with negative value (%d)\n", label_tok->intval);
-// 	}
-
-// 	int exists = get_internal_label_num(label_tok->intVal);
-// 	if (exists == -1) {
-// 		return 0;
-// 	}
-// 	return 1;
-// }
-
-// // do NOT return ->token for reuse, otherwise the label can only be goto'd once
-// int get_internal_label_num(int external_label_num) {
-// 	if (external_label_num < 0) {
-// 		printf("Error: cannot find negative label number %d\n", external_label_num);
-// 		return -1;
-// 	}
-// 	else {
-// 		TOKENNODE temp = user_labels;
-// 		while (temp) {
-// 			if (temp->token->intval == external_label_num) {
-// 				return (temp->internal_label_num);
-// 			}
-// 			temp = temp->next;
-// 		}
-// 		return -1;
-// 	}
-// }
-// void insert_label(int internal_label_num, TOKEN label_tok) {
-// 	if (label_tok->intval < 0) {
-// 		// ??? should be allowed
-// 	}
-// 	else if (internal_label_num < 0) {
-// 		// ???
-// 	}
-// 	else if (user_label_exists(label_tok)) {
-// 		return;
-// 	}	// check to see if label num already exists?
-// 	else {
-// //		dbugprinttok(label_tok);
-// 		if (!user_labels) {
-// 			user_labels = malloc(sizeof(struct toknode));
-// 			user_labels->internal_label_num = internal_label_num;
-// 			user_labels->token = label_tok;
-// 			user_labels->next = NULL;
-// 			curr_label = user_labels;
-// 		}
-// 		else {
-// 			TOKENNODE curr = malloc(sizeof(struct toknode));
-// 			curr->internal_label_num = internal_label_num;
-// 			curr->token = label_tok;
-// 			curr->next = NULL;
-// 			curr_label->next = curr;
-// 			curr_label = curr;
-// 		}
-// 	}
-// }
-
 // for debug :
-/* Print one symbol table entry for debugging      */
+/* Print one symbol table entry for debugging */
 void dbprsymbol(SYMBOL sym)
 {
 	if (sym != NULL)

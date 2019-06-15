@@ -9,6 +9,10 @@ extern int basicsizes[5];
 int nextLabel;    /* Next available label number */
 int stackFrameSize;   /* total stack frame size */
 
+/* save rbp of each block in other regs, to access. 
+ * accessLink[level] = R8 means R8 = RBP of this level's block*/
+int accessLink[MAXBLOCKS] = { 0 };
+
 /* Top-level entry for code generator.
    parseResult    = pointer to code:  (program foo (output) (progn ...))
    varsize  = size of local storage in bytes
@@ -26,6 +30,9 @@ void genCode(TOKEN parseResult, int varsize, int maxlabel)
 	name = parseResult;
 	function = parseResult->operands;
 	stackFrameSize = asmentry(name->stringVal, varsize);
+	int access = getRBPReg();
+	accessLink[curLevel] = access;
+	asmrr64(MOV, RBP, access);
 	asmjump(JMP, 0);	// jump to L0 (start)
 	nextLabel = maxlabel + 1;
 	while (function->whichToken == OP_FUN_DCL)
@@ -71,6 +78,22 @@ int getReg(int kind)
 	return RBASE;
 }
 
+/* get reg to save access link, r8 - r15 */
+int getRBPReg()
+{
+	int i;
+	for (i = 8; i <= 15; i++)
+	{
+		if (regs[i] == 0)
+		{
+			if (i == 9)
+				continue;
+			regs[i] = 1;
+			return i;
+		}
+	}
+}
+
 /* Trivial version */
 /* Generate code for arithmetic expression, return a register number */
 int genExp(TOKEN code)
@@ -105,8 +128,22 @@ int genExp(TOKEN code)
 		fname[0] = '_';
 		strcpy(fname + 1, code->stringVal);
 		funSym = searchst(fname);
-		idSym = searchst(code->stringVal);
 
+		int level = curLevel;
+		idSym = searchlev(code->stringVal, level);
+		if (idSym == NULL)		// var not in this block, check the out level
+			asmpush(RBP);
+		while (idSym == NULL)
+		{
+			level = outLevel[level];
+			idSym = searchlev(code->stringVal, level);
+		}
+		if (level != curLevel)
+		{
+			asmrr64(MOV, accessLink[level], RBP);
+			stackFrameSize = getStackSize(level);
+		}
+		
 		if (idSym->nestLevel == 0)
 		{
 			int temp_reg = getReg(DATA_INT);
@@ -149,6 +186,11 @@ int genExp(TOKEN code)
 					asmld(MOVSD, idSym->offset - stackFrameSize, ret, code->stringVal);
 				}
 			}
+		}
+		if (level != curLevel)
+		{
+			asmpop(RBP);
+			stackFrameSize = getStackSize(curLevel);
 		}
 		break;
 	}
@@ -428,7 +470,23 @@ void genc(TOKEN code)
 			}
 			else		// other tokens have name string, and can search in table directly 
 			{
-				SYMBOL leftSymbol = searchst(leftValue->stringVal);
+				int level = curLevel;
+				SYMBOL leftSymbol;
+				leftSymbol = searchlev(leftValue->stringVal, level);
+				if (leftSymbol == NULL)		// var not in this block, check the out level
+					asmpush(RBP);
+				while(leftSymbol == NULL)
+				{
+					level = outLevel[level];
+					leftSymbol = searchlev(leftValue->stringVal, level);
+				}
+				if (level != curLevel)
+				{
+					asmrr64(MOV, accessLink[level], RBP);
+					stackFrameSize = getStackSize(level);
+				}
+
+				//SYMBOL leftSymbol = searchst(leftValue->stringVal);
 				if (leftSymbol != NULL)
 					offset = leftSymbol->offset - stackFrameSize;          /* net offset of the var   */
 				if (leftSymbol->kind == SYM_ARGVAR)		// pass by reference, the address is stored in offset
@@ -454,7 +512,12 @@ void genc(TOKEN code)
 					default:
 						break;
 					}
-				}			
+				}
+				if (level != curLevel)
+				{
+					asmpop(RBP);
+					stackFrameSize = getStackSize(curLevel);
+				}
 			}
 			freeReg(rightReg);
 			break;
@@ -511,7 +574,7 @@ void genc(TOKEN code)
 		case OP_FUN_DCL:
 		{
 			TOKEN functionName = code->operands->operands;
-			TOKEN functionBody = code->operands->operands->next;
+			TOKEN functionBody = functionName->next;
 			char fname[16];
 			fname[0] = '_';
 			strcpy(fname + 1, functionName->stringVal);
@@ -521,6 +584,9 @@ void genc(TOKEN code)
 				curLevel = functionSymbol->flevel;
 				stackFrameSize = getStackSize(curLevel);		// get the frame size for this block
 				printf(funcTopCode, stackFrameSize);
+				int access = getRBPReg();
+				accessLink[curLevel] = access;
+				asmrr64(MOV, RBP, access);
 
 				SYMBOL func_ret = functionSymbol->args;		// the first arg is the return var. 
 				SYMBOL func_args = func_ret->args;		// the second arg is the argument
@@ -662,15 +728,29 @@ int genFunCall(TOKEN code)
 			asym = searchst(argList->stringVal);
 			if (fargsym->kind == SYM_ARGVAR)			// pass by reference, in function body, b means *(&b)
 			{
-				int temp = getReg(DATA_INT);		// 0: rax
-				char name[20];				// &b -> rax 
-				sprintf(name, "&%s", code->stringVal);
-				asmld64(LEA, asym->offset - stackFrameSize, temp, name);		// lea rax, [rbp-offs]
-				if (temp != argRegs[count])			
+				if (asym->kind == SYM_ARGVAR)
 				{
-					asmrr64(MOV, temp, argRegs[count]);		// mov rdi, rax
-					setRegUsed(argRegs[count++]);
-					freeReg(temp);
+					int temp = getReg(DATA_INT);		// put one arg's value in temp
+					asmld64(MOV, asym->offset - stackFrameSize, temp, argList->stringVal);
+					if (temp != argRegs[count])
+					{
+						asmrr64(MOV, temp, argRegs[count]); // score values into arg reg
+						setRegUsed(argRegs[count++]);
+						freeReg(temp);
+					}
+				}
+				else
+				{
+					int temp = getReg(DATA_INT);		// 0: rax
+					char name[20];				// &b -> rax 
+					sprintf(name, "&%s", code->stringVal);
+					asmld64(LEA, asym->offset - stackFrameSize, temp, name);		// lea rax, [rbp-offs]
+					if (temp != argRegs[count])
+					{
+						asmrr64(MOV, temp, argRegs[count]);		// mov rdi, rax
+						setRegUsed(argRegs[count++]);
+						freeReg(temp);
+					}
 				}
 			}
 			else
@@ -686,11 +766,20 @@ int genFunCall(TOKEN code)
 			argList = argList->next;
 			fargsym = fargsym->args;
 		}
-		asmcall(code->stringVal);
-		setRegUsed(EAX);		// return is EAX
-		int temp = getReg(fsym->basicType);
-		asmrr(MOV, EAX, temp);
-		freeReg(EAX);
+		int temp;
+		if (regs[EAX] == 1)
+		{
+			asmpush(EAX);
+			asmcall(code->stringVal);		// return is EAX
+			temp = getReg(fsym->basicType);
+			asmrr(MOV, EAX, temp);
+			asmpop(EAX);
+		}
+		else
+		{
+			asmcall(code->stringVal);
+			temp = EAX;
+		}
 		ret = temp;
 		for (int i = 0; i < count; i++)
 		{
@@ -706,6 +795,11 @@ void resetRegs()
 	for (int i = 0; i < NUM_REGS; i++)
 	{
 		regs[i] = 0;
+	}
+	for (int i = 0; i < NUM_REGS; i++)
+	{
+		if (accessLink[i] != 0)
+			regs[accessLink[i]] = 1;
 	}
 }
 

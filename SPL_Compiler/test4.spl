@@ -23,6 +23,9 @@ end
 ;
 
 begin
-	writeln(2 * k + (f - 3));
+	k := 0;
+	f := go(k , 5);
+	writeln(f);
+	writeln(k);
 end
 .

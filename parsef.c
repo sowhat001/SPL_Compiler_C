@@ -83,11 +83,11 @@ TOKEN createLabel()
 }
 
 /* A ID token. check this token in symbol table.
-symType and symEntry are changed.
-dataType will be changed if it is a const token. */
+   symType and symEntry are changed.
+   dataType will be changed if it is a const token. */
 TOKEN findId(TOKEN token)
 {
-	SYMBOL idSymbol = searchst(token->stringVal);
+	SYMBOL idSymbol = searchst(token->stringVal);	/* search the symbol table*/
 
 	if (!idSymbol)
 	{
@@ -97,7 +97,7 @@ TOKEN findId(TOKEN token)
 		return NULL;
 	}
 
-	if (idSymbol->kind == SYM_FUNCTION)
+	if (idSymbol->kind == SYM_FUNCTION)		/* may can be deleted */
 	{
 		for (int i = MAX_STR_LENGTH; i > 0; i--)
 		{
@@ -106,6 +106,7 @@ TOKEN findId(TOKEN token)
 		token->stringVal[0] = '_';
 		idSymbol = searchst(token->stringVal);
 	}
+
 	if (idSymbol->kind == SYM_CONST)
 	{
 		token->tokenType = TYPE_DATA;
@@ -398,7 +399,7 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 
 /* A function call. get its arguments and check it is avaliable function name or not.
 funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
-???是不是还要检查一下是不是和声明的参数一样
+
 */
 TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 {
@@ -421,24 +422,23 @@ TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 	else
 		funcName->dataType = funSymbol->dataType->basicType;
 	// check type
-	//TOKEN a;
-	//SYMBOL fatype, atype;
-	//if (funSymbol->args != NULL)
-	//{
-	//	fatype = funSymbol->args->args;			// The first args is return val
-	//}
-	//else
-	//	fatype = funSymbol->args;
-	//for (a = arguments; a != NULL; a = a->next)
-	//{
-	//	atype = a->symType;
-	//	// only check simple types
-	//	if (atype->basicType != fatype->basicType)
-	//	{
-	//		semanticError("function arguments don't match");
-	//		return NULL;
-	//	}
-	//}
+	TOKEN a;
+	SYMBOL fatype, atype;
+	if (funSymbol->args != NULL)
+	{
+		fatype = funSymbol->args->args;			// The first args is return val
+	}
+	else
+		fatype = funSymbol->args;
+	for (a = arguments; a != NULL && fatype != NULL; a = a->next)
+	{
+		if (a ->dataType!= fatype->basicType)
+		{
+			semanticError("function arguments type don't match");
+			return NULL;
+		}
+		fatype = fatype->args;
+	}
 	funcName->operands = lpToken;				//???有什么用
 	lpToken = link(lpToken, arguments);
 
@@ -929,7 +929,6 @@ TOKEN makeRecord(TOKEN fields)
 	recsym->size = size;
 	rectok->symEntry = recsym;
 	rectok->symType = recsym;			// token's symType pointer points to the symbol table entry
-	printf("debug: %d\n", curLevel);
 	return rectok;
 }
 
@@ -1036,11 +1035,6 @@ TOKEN makeFunDcl(TOKEN head, TOKEN body)
 	else
 		head = link(head,body);
 
-	//curLevel = blocknumber;	// current block level, = last block
-	//blockoffs[blocknumber] = 0;
-	//blocknumber++;				// may be another function block
-	//outLevel[blocknumber] = outLevel[curLevel];
-
 	return fundcl_tok;
 }
 
@@ -1138,6 +1132,7 @@ void yyerror(char* s)
 void semanticError(char* errorMessage)
 {
 	fprintf(stderr, "Error: Semantic error at line %d: %s\n", lineCount, errorMessage);
+	while (1);		// block if error detected.
 }
 
 /* warning prompt*/

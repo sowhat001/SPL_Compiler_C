@@ -19,38 +19,38 @@ int accessLink[MAXBLOCKS] = { 0 };
    maxlabel = maximum label number used so far
 
 _ADD this line to the end of your main program:
-	genCode(parseresult, blockoffs[blocknumber], labelnumber);
+	genCode(parseresult, blockoffs[curLevel], labelnumber);
 The generated code is printed out; use a text editor to extract it for
-your .s file.
-		 */
-
+your .asm file.		 */
 void genCode(TOKEN parseResult, int varsize, int maxlabel)
 {
 	TOKEN name, function, main;
-	name = parseResult;
+	name = parseResult; 
 	function = parseResult->operands;
-	stackFrameSize = asmentry(name->stringVal, varsize);
-	int access = getRBPReg();
+	stackFrameSize = asmentry(name->stringVal, varsize);	/* print head and get the stack frame size*/
+	int access = getRBPReg();		/* save rbp for access link */
 	accessLink[curLevel] = access;
 	asmrr64(MOV, RBP, access);
-	asmjump(JMP, 0);	// jump to L0 (start)
-	nextLabel = maxlabel + 1;
+	asmjump(JMP, 0);				/* jump to L0 (start) */
+	nextLabel = maxlabel + 1;		
+	/* generate code for function declarations */
 	while (function->whichToken == OP_FUN_DCL)
 	{
-		asmlabelstr(function->operands->operands->stringVal);
-		genc(function);
-		function = function->next;
+		asmlabelstr(function->operands->operands->stringVal);	/* print label for this function*/
+		genc(function);				/* generate code */
+		function = function->next;	/* check next function*/
 	}
-
+	/* generate the main body */
 	main = function;
-	asmlabel(0);		// label L0 (start)
+	asmlabel(0);		/* label L0 (start)*/
 	genc(main);
-	asmexit(name->stringVal);
+	asmexit(name->stringVal);		/* generate the exit code */
 }
 
-/* Trivial version: always returns RBASE + 0 */
-/* Get a register.   */
-/* Need a type parameter or two versions for INTEGER or REAL */
+/* Get a free register.
+ * Return the register number.
+ * Set this register as used.
+ */
 int getReg(int kind)
 {
 	int i = 0;
@@ -61,10 +61,11 @@ int getReg(int kind)
 		stop = NUM_REGS;
 	}
 
-	for (; i < stop; i++)
+	for (; i < stop; i++)		
 	{
 		if (regs[i] == 0)
 		{
+			/* saved 4 registers */
 			if (i == EDI || i == ESI || i == ESP || i == EBP)
 			{
 				continue;
@@ -73,12 +74,12 @@ int getReg(int kind)
 			return i;
 		}
 	}
-	if (i >= stop) printf("Regster Overflow.\n");
-
+	if (i >= stop) 
+		printf("Regster Overflow.\n");
 	return RBASE;
 }
 
-/* get reg to save access link, r8 - r15 */
+/* get reg to save access link, in r8 - r15 */
 int getRBPReg()
 {
 	int i;
@@ -92,23 +93,27 @@ int getRBPReg()
 			return i;
 		}
 	}
+	if (i > 15)
+		return RBASE;
 }
 
-/* Trivial version */
-/* Generate code for arithmetic expression, return a register number */
+/* Generate code for arithmetic expression, 
+ * return a register number, the answer of the expression is saved in this register.
+ */
 int genExp(TOKEN code)
 {
-	int ret = -1; //return the register number;
-	switch (code->tokenType)
+	int ret = -1; /* return the register number; */
+	switch (code->tokenType) 
 	{
+	/* TOKEN code is a const data. mov the val into the register */
 	case TYPE_DATA:
 	{
 		switch (code->dataType)
 		{
 			case DATA_INT:
 			{
-				ret = getReg(DATA_INT);
-				asmimmed(MOV, code->intVal, ret);
+				ret = getReg(DATA_INT);				/* get a free reg, e.g. eax */
+				asmimmed(MOV, code->intVal, ret);	/* make a mov inst. e.g. mov eax, 1 */
 				break;
 			}
 			case DATA_REAL:
@@ -121,17 +126,19 @@ int genExp(TOKEN code)
 		}
 		break;
 	}
+	/* TOKEN code is a ID. mov the val from ID's address into the register */
 	case TYPE_ID:
 	{
 		SYMBOL funSym, idSym;
 		char fname[16];
+		/* make function name. function name is stored with a '_' ahead, to differ from the return var. */
 		fname[0] = '_';
 		strcpy(fname + 1, code->stringVal);
-		funSym = searchst(fname);
+		funSym = searchst(fname);	/* funSym points to the symbol table entry of the function */
 
 		int level = curLevel;
-		idSym = searchlev(code->stringVal, level);
-		if (idSym == NULL)		// var not in this block, check the out level
+		idSym = searchlev(code->stringVal, level);	/* search var name in the current block */
+		if (idSym == NULL)		/* var not in this block, check the out level*/ 
 			asmpush(RBP);
 		while (idSym == NULL)
 		{

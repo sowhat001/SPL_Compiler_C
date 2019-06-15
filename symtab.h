@@ -39,7 +39,7 @@ typedef struct symtbr
 	struct symtbr *next; 		/* point to the next token with the same hash value */
 	char   nameString[16];		/* name */
 	int    kind;                /* kind of symbol -- see defines. */
-	// if function:  type is return type, as well as the type of function name in function. 
+	/* if function:  type is return type, as well as the type of function name in function. */
 	int    basicType;             /* type code for basic data types       */
 	struct symtbr *dataType;    /* pointer for more complex data types  */
 	int    nestLevel;			/* nest level */
@@ -54,13 +54,13 @@ typedef struct symtbr
 	} constval;
 	int    lowBound;			// for array 
 	int    highBound;
-	// for function: the first argument, for an argument: the next argument
+	/* for function: the first argument, for an argument: the next argument */
 	struct symtbr *args;
-	// for enum or record, list of members
+	/* for enum or record, list of members */
 	struct symbtr *members;
-	// type of array subs. can only be DATA_CHAR or DATA_INT
+	/* type of array subs. can only be DATA_CHAR or DATA_INT */
 	int subtype;
-	// only valied for SYM_FUNCTION symbol, remembers the level of the function's block. 
+	/* only valied for SYM_FUNCTION symbol, remembers the level of the function's block. */
 	int flevel;
 } *SYMBOL;
 
@@ -112,16 +112,11 @@ int alignsize(SYMBOL sym);
 
 #define DEBUG_SYMTAB 0
 
-// int user_label_exists(TOKEN label_tok);
-// int get_internal_label_num(int external_label_num);
-// void insert_label(int internal_label_num, TOKEN label_tok);
-
 #define HASH_SIZE 31	// prime 
 #define HASH_SHIFT 3 	// alpha is 8 = 2^3, shift 3 bits
 int hash_f(char name[]);
 
-// 05.26 new
-// copy a symbol with new name and insert into symbol table
+/* copy a symbol with new name and insert into symbol table */
 SYMBOL copyAndInsert(char name[], SYMBOL source);
 
 #endif	/* SYMTAB_H */

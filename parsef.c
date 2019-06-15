@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "parsef.h"
-#pragma warning(disable:4996)
 
 extern int yylineno;
 extern int lineCount;
@@ -398,9 +397,8 @@ TOKEN makeFor(TOKEN forToken, TOKEN initAssign, TOKEN direction, TOKEN finalAssi
 }
 
 /* A function call. get its arguments and check it is avaliable function name or not.
-funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
-
-*/
+ *funcName's tokenType, whichToken, dataType are changed. dataType is return value's type
+ */
 TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 {
 	funcName->tokenType = TYPE_OPERATOR;
@@ -439,7 +437,7 @@ TOKEN makeFuncall(TOKEN lpToken, TOKEN funcName, TOKEN arguments)
 		}
 		fatype = fatype->args;
 	}
-	funcName->operands = lpToken;				//???有什么用
+	funcName->operands = lpToken;
 	lpToken = link(lpToken, arguments);
 
 	return funcName;
@@ -473,10 +471,6 @@ TOKEN makeIf(TOKEN ifToken, TOKEN expression, TOKEN thenStmt, TOKEN elseStmt)
 /* label token with user's given number */
 TOKEN makeLabel(TOKEN labelNum, TOKEN stmt)
 {
-	//TOKEN labelToken = createLabel();
-	//labelToken->operands = createConst(get_internal_label_num(labelNum->intVal));
-	//labelToken = link(labelToken, stmt);
-	//labelNum = makeBeginStmt(labelNum, labelToken);
 	return labelNum;
 	/* labelNum(OP_PROGN)
 
@@ -508,7 +502,7 @@ TOKEN makeRepeat(TOKEN repeatToken, TOKEN stmt, TOKEN untilToken, TOKEN expressi
 	ifToken->tokenType = TYPE_OPERATOR;
 	ifToken->whichToken = IF;
 	stmt = link(stmt, ifToken);
-	untilToken->whichToken = OP_PROGN;//???
+	untilToken->whichToken = OP_PROGN;  //???
 	ifToken = makeIf(ifToken, expression, outGotoToken, gotoToken);
 
 	return repeatToken;
@@ -650,11 +644,11 @@ void regVar(TOKEN varlist, TOKEN type, int isvar)
 	}
 }
 
-// get the type in symbol table by the string in a token, fill it in the symType of the token
+/* get the type in symbol table by the string in a token, fill it in the symType of the token */
 TOKEN getType(TOKEN typetok)
 {
 	SYMBOL typesym;
-	// search the symbol table for the type's symbol entry
+	/* search the symbol table for the type's symbol entry */
 	typesym = searchst(typetok->stringVal);
 
 	if (typesym == NULL)
@@ -666,16 +660,15 @@ TOKEN getType(TOKEN typetok)
 	}
 	else
 	{
-		// symType points to the type in symbol table 
+		/* symType points to the type in symbol table */
 		typetok->symType = typesym;
 		typetok->symEntry = typesym;
 	}
 	return typetok;
 }
 
-// put a type definition into symbol table 
-/* sym->name = alias->string
- *
+/* put a type definition into symbol table 
+ * sym->name = alias->string
  */
 void regType(TOKEN alias, TOKEN type)
 {
@@ -685,10 +678,11 @@ void regType(TOKEN alias, TOKEN type)
 	copyAndInsert(alias->stringVal, typeSym);
 }
 
-// make a subrange type token. 
-// not a subrange varible but the type. 
-// low and high can be CONST NUMBER or CONST ID defined before 
-// return a token, whose symType points to the symbol table entry of the subrange type. 
+/* make a subrange type token. 
+ * not a subrange varible but the type. 
+ * low and high can be CONST NUMBER or CONST ID defined before 
+ * return a token, whose symType points to the symbol table entry of the subrange type. 
+ */
 TOKEN makeSubrange(TOKEN low, TOKEN high)
 {
 	TOKEN rangeTok;		// this token only symType field is used.
@@ -760,8 +754,8 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 			semanticError(s);
 			return NULL;
 		}
-		// low id and high id are both found: 
-		// check if they are const
+		/* low id and high id are both found: */
+		/* check if they are const */
 		if (lowsym->kind == SYM_CONST && highsym->kind == SYM_CONST)
 		{
 			double lowbound, highbound;
@@ -794,7 +788,6 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 					semanticError(s);
 					return NULL;
 				}
-
 			}
 			else
 			{
@@ -802,7 +795,6 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 				semanticError(s);
 				return NULL;
 			}
-
 		}
 		else
 		{
@@ -810,8 +802,6 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 			semanticError(s);
 			return NULL;
 		}
-
-
 	}
 	else
 	{
@@ -824,8 +814,9 @@ TOKEN makeSubrange(TOKEN low, TOKEN high)
 	return rangeTok;
 }
 
-// make an enum type token. The symType filed in this token points to this enum type's symtbl entry. 
-// elements is the head of the element id link. 
+/* make an enum type token. The symType filed in this token points to this enum type's symtbl entry. 
+ * elements is the head of the element id link. 
+ */
 TOKEN makeEnum(TOKEN elements)
 {
 	TOKEN enumtok;
@@ -856,15 +847,16 @@ TOKEN makeEnum(TOKEN elements)
 	return enumtok;
 }
 
-// make an array token
-// range is the token of the subrange, and datatype is the type of the elements in the array
-// return a newly created token, which symType points to the array type in symbol entry
+/* make an array token
+ * range is the token of the subrange, and datatype is the type of the elements in the array
+ * return a newly created token, which symType points to the array type in symbol entry
+ */
 TOKEN makeArray(TOKEN range, TOKEN datatype)
 {
 	TOKEN arraytok;
 	SYMBOL rangeSym, typeSym, arraySym;
 	char name[16] = "";		// still do not have a name
-	// if datatype is null, it means the getType function cannot find this type in symbol table, return NULL
+	/* if datatype is null, it means the getType function cannot find this type in symbol table, return NULL */
 	if (datatype == NULL)
 	{
 		return NULL;
@@ -907,7 +899,7 @@ TOKEN makeArray(TOKEN range, TOKEN datatype)
 	return arraytok;
 }
 
-// return a token, whose symType points to the symbol table entry of this type
+/* return a token, whose symType points to the symbol table entry of this type */
 TOKEN makeRecord(TOKEN fields)
 {
 	TOKEN rectok;
@@ -956,7 +948,7 @@ TOKEN makeField(TOKEN varlist, TOKEN type)
 		fieldSym->offset = blockoffs[curLevel];
 		blockoffs[curLevel] += fieldSym->size;
 		if (pre != NULL)
-			pre->members = fieldSym;			// link fields in symbol table together
+			pre->members = fieldSym;			/* link fields in symbol table together */
 		pre = fieldSym;
 		v->symType = fieldSym;		// fill in the symType in token v 
 		v->symEntry = fieldSym;
@@ -964,8 +956,9 @@ TOKEN makeField(TOKEN varlist, TOKEN type)
 	return varlist;
 }
 
-// deal with record.field, find the Record member 
-// return a token DOT->recordvar->field's offset, DOT's type is the field's  type
+/* deal with record.field, find the Record member 
+ * return a token DOT->recordvar->field's offset, DOT's type is the field's  type
+ */ 
 TOKEN makeRecordMember(TOKEN recordVar, TOKEN field)
 {
 	TOKEN dotToken;
@@ -1038,7 +1031,7 @@ TOKEN makeFunDcl(TOKEN head, TOKEN body)
 	return fundcl_tok;
 }
 
-/* makeFunHead: make function head*/
+/* makeFunHead: make function head */
 TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 {
 	// for function
@@ -1066,20 +1059,7 @@ TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 			}
 			a = a->args;
 		}
-
 		insertfnx(name->stringVal, retype->symType, arglist);
-
-		// insert "_funname" variable  (dyx: res is inserted in isertfnx, maybe problem:
-		//TOKEN new_var = tokenAlloc();
-		//int i;
-		//new_var->stringVal[0] = '_';
-		//for (i = 1; i < 16; i++)
-		//{
-		//	new_var->stringVal[i] = fun_name->stringVal[i - 1];
-		//}
-		//new_var->tokenType = TYPE_ID; // TOKEN_ID
-
-		//regVar(new_var, getType(funtype_tok));
 	}
 	// for procedure
 	else
@@ -1103,13 +1083,12 @@ TOKEN makeFunHead(TOKEN head, TOKEN name, TOKEN argtok, TOKEN retype)
 		}
 		insertfnx(name->stringVal, NULL, arglist);
 	}
-
-	//TOKEN fun_block = createConst(blocknumber);
-	//head->operands = link(fun_block, name);
 	head->operands = name;
 	return head;
 }
 
+/* new a block and raise the level to this block 
+ */
 void upLevel()
 {
 	blocknumber++;		// total number of blocks 
@@ -1117,10 +1096,13 @@ void upLevel()
 	curLevel = blocknumber;		// up 
 }
 
+/* down to the out layer level 
+ */
 void downLevel()
 {
 	curLevel = outLevel[curLevel];
 }
+
 /* yy parse error*/
 void yyerror(char* s)
 {

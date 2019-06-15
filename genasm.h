@@ -107,9 +107,7 @@ void asmjump(int code, int labeln);
 /* Example:  asmimmed(MOVL, 3, EAX);   Moves 3 to EAX  */
 /* Example:  asmimmed(ADDL, 1, EAX);   Adds 1 to EAX  */
 void asmimmed(int inst, int ival, int dstreg);
-/* Generate an instruction with just the op. */
-/* Example:  asmop(CLTQ) */
-void asmop(int inst);
+
 /* Generate a register to register instruction. */
 /* op rs,rd     ADDL  */
 /* Example:  asmrr(ADDL, ECX, EAX);  EAX + ECX -> EAX */
@@ -129,68 +127,17 @@ void asmst(int inst, int reg, int off, char str[]);
 /* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
 void asmst64(int inst, int reg, int off, char str[]);
 
-void asmsttemp(int reg);
-/* Generate a floating from a temporary on stack */
-/* Example:  asmst(MOVL, EAX, -code->symentry->offset, code->stringval);  */
-void asmldtemp(int reg);
 /* Generate a load instruction using offset and a register: */
 /* Example:  asmldr(MOVL, 4, RAX, ECX, code->stringval);  4(%rax) --> %ecx */
 void asmldr(int inst, int offset, int reg, int dstreg);
-/* Generate a load instruction using offset, RBP and another register: */
-/* Example:
-   asmldrr(MOVL, -8, RAX, ECX, code->stringval);  -8(%rbp,%rax) --> %ecx */
-void asmldrr(int inst, int offset, int reg, int dstreg, char str[]);
-/* Generate a load instruction using offset, RBP and
-   another register with multiplier (2, 4 or 8): */
-   /* Example:
-	  asmldrrm(MOVL, -8, RAX, 4, ECX, code->stringval); -8(%rbp,%rax,4) --> %ecx */
-void asmldrrm(int inst, int offset, int reg, int mult, int dstreg, char str[]);
+
 /* Generate a store instruction relative to a register: */
 /* Example:  asmstr(MOVL, ECX, 4, RAX, code->stringval);  %ecx --> 4(%rax) */
 void asmstr(int inst, int srcreg, int offset, int reg);
-/* Generate a store instruction using offset, RBP and another register: */
-/* Example:
-   asmstrr(MOVL, ECX, -8, RAX, code->stringval);  -8(%rbp,%rax) --> %ecx */
-void asmstrr(int inst, int srcreg, int offset, int reg, char str[]);
-/* Generate a store instruction using offset, RBP and
-   another register with multiplier (2, 4 or 8): */
-   /* Example:
-	  asmstrrm(MOVL, ECX, -8, RAX, 4, code->stringval); %ecx --> -8(%rbp,%rax,4) */
-void asmstrrm(int inst, int srcreg, int offset, int reg, int mult, char str[]);
-/* Load float literal into specified register */
-/* Example:  asmldflit(MOVSD, 7, XMM0);  literal with label .LC7 --> XMM0 */
-void asmldflit(int inst, int label, int dstreg);
-/* Set up a literal address argument for subroutine call, e.g. writeln('*') */
-/* Example:  asmlitarg(8, EDI);   addr of literal 8 --> %edi */
-void asmlitarg(int labeln, int dstreg);
-/* Generate a left-shift instruction to shift left n bits, zero fill.   */
-/* Example:  asmlshift(L1, 3, L1);     L1 shifted left 3 bits --> L1 */
-void asmlshift(int srcreg, int n, int dstreg);
-/* Generate instructions to float data from an integer register to F reg. */
-/* reg is integer source, freg is double float destination register. */
-void asmfloat(int reg, int freg);
-/* Generate instruction to fix data from float register freg to int reg. */
-/* freg is double float source, reg is integer destination register. */
-void asmfix(int freg, int reg);
-/* Generate instructions to negate a float reg. */
-/* reg is value to be negated, extrareg is another float register. */
-void asmfneg(int reg, int extrareg);
-/* Get half words of a double float */
-/* Note: the [0] and [1] below are correct for Linux;
-	 you may need to switch for other machine or OS. */
-int lefth(double d);
-int righth(double d);
+
 /* Make exit code for a program. */
 /* This is just canned code following calling conventions for target machine */
 void asmexit(char name[]);
-/* Make a literal for integer n with label number labeln */
-void makeilit(int n, int labeln);
-/* Make a literal for float f with label number labeln */
-void makeflit(float f, int labeln);
-/* Make a byte literal for string s with label number labeln */
-void makeblit(char s[], int labeln);
-/* Output literals and end material*/
-void outlits();
 
 /* Print a section of canned code.  Quits on an empty string.  */
 void directPrint(char* lines[]);
